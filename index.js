@@ -40,18 +40,7 @@ client.once("ready", () => {
 });
 
 client.on("message", async message => {
-  const input = message.content.slice(prefix.length).split(" ");
-  const command = input.shift();
-  const commandArgs = input.join(" ");
-
-  console.log("ok");
-
-  console.log(message.author.username);
-  console.log(message.content.startsWith(prefix));
-  console.log(message.content);
-  console.log(command);
-  console.log(prefix);
-
+  console.log("barbabietola");
   const tag = await Tags.findOne({
     where: { name: message.author.username }
   });
@@ -59,7 +48,9 @@ client.on("message", async message => {
     console.log(tag.get("messages_count"));
     tag.increment("messages_count");
     if (tag.get("messages_count") == 50) {
-      message.channel.send(`${message.author.username} reached lv ${tag.get('rank')}`);
+      message.channel.send(
+        `${message.author.username} reached lv ${tag.get("rank")}`
+      );
     }
     return;
   } else {
@@ -69,14 +60,20 @@ client.on("message", async message => {
       rank: 0
     });
   }
+});
 
-  if (message.content.startsWith(prefix)) {
-    const input = message.content.slice(prefix.length).split(" ");
-    const command = input.shift();
-    const commandArgs = input.join(" ");
+client.on("message", async message => {
+  const input = message.content;
+  const command = input.charAt(0) === prefix ? input.substr(1) : input;
+  // const command = input.shift();
 
-    console.log("aiutaciTU");
+  console.log("ok");
+
+  if (message.content.charAt(0) === prefix) {
+    // const command = input.shift();
+
     if (command === "par") {
+      console.log("aiutaciTU");
       try {
         const tag = await Tags.create({
           name: message.author.username,
@@ -93,18 +90,15 @@ client.on("message", async message => {
           "Something went wrong with adding you to the leaderboard."
         );
       }
-    } else if (command === "tag") {
-      console.log("cippa");
-      const tagName = commandArgs;
+    } else if (command === "showrank") {
 
-      // equivalent to: SELECT * FROM tags WHERE name = 'tagName' LIMIT 1;
-      const tag = await Tags.findOne({ where: { name: tagName } });
+      console.log("cippa");
+
+      const tag = await Tags.findOne({ where: { name: message.author.username } });
       if (tag) {
-        // equivalent to: UPDATE tags SET messages_count = messages_count + 1 WHERE name = 'tagName';
-        tag.increment("messages_count");
-        return message.channel.send(tag.get("description"));
+        return message.channel.send(tag.get("rank"));
       }
-      return message.reply(`Could not find tag: ${tagName}`);
+      return message.reply(`Could not find tag: ${message.author.username}`);
     }
   }
 });
