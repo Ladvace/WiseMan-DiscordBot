@@ -40,7 +40,6 @@ client.once("ready", () => {
 });
 
 client.on("message", async message => {
-  console.log("barbabietola");
   const tag = await Tags.findOne({
     where: { name: message.author.username }
   });
@@ -69,9 +68,7 @@ client.on("message", async message => {
 
   console.log("ok");
 
-  if (message.content.charAt(0) === prefix) {
-    // const command = input.shift();
-
+  if (message.content.charAt(0) === prefix)
     if (command === "par") {
       console.log("aiutaciTU");
       try {
@@ -83,24 +80,25 @@ client.on("message", async message => {
 
         return message.reply(`${tag.name} added to the leaderboard.`);
       } catch (e) {
-        // if (e.name === "SequelizeUniqueConstraintError") {
-        //   return message.reply("You are already added.");
-        // }
+        if (e.name === "SequelizeUniqueConstraintError") {
+          return message.reply("You are already added.");
+        }
+        console.log(e);
         return message.reply(
           "Something went wrong with adding you to the leaderboard."
         );
       }
     } else if (command === "showrank") {
-
       console.log("cippa");
 
-      const tag = await Tags.findOne({ where: { name: message.author.username } });
+      const tag = await Tags.findOne({
+        where: { name: message.author.username }
+      });
       if (tag) {
         return message.channel.send(tag.get("rank"));
       }
       return message.reply(`Could not find tag: ${message.author.username}`);
     }
-  }
 });
 
 client.on("guildMemberAdd", member => {
@@ -112,6 +110,16 @@ client.on("guildMemberAdd", member => {
   channel.send(
     `Welcome to the server, ${member}, you can partecipate to the leaderboard using the command !par`
   );
+});
+
+client.on("guildUpdate", member => {
+  // Send the message to a designated channel on a server:
+  console.log("ciooo");
+  const channel = member.guild.channels.find(ch => ch.name === "general");
+  // Do nothing if the channel wasn't found on this server
+  if (!channel) return;
+  // Send the message, mentioning the member
+  channel.send(`${member} have changed his name to ${member.oldGuild}`);
 });
 
 client.login(token);
