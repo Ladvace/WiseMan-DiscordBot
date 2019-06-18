@@ -72,9 +72,8 @@ client.on("message", async message => {
     } else if (user.get("messages_count") == 200) {
       user.increment("rank");
       console.log(user.get("messages_count"));
-      message.channel.send(
-        `${message.author.username} reached lv ${user.get("rank")}`
-      );
+
+      message.channel.send(`${message.author.username} ranked resetted!`);
     }
     return;
   } else {
@@ -89,6 +88,9 @@ client.on("message", async message => {
 client.on("message", async message => {
   const input = message.content;
   const command = input.charAt(0) === prefix ? input.substr(1) : input;
+  const user = await Tags.findOne({
+    where: { name: message.author.username }
+  });
 
   console.log("ok");
 
@@ -112,15 +114,20 @@ client.on("message", async message => {
         );
       }
     } else if (command === "showrank") {
-      const user = await Tags.findOne({
-        where: { name: message.author.username }
-      });
       if (user) {
         return message.channel.send(`your rank is ${user.get("rank")}`);
       }
       return message.reply(`Could not find your rank`);
     } else if (command === "wima") {
       message.channel.send(message.author.avatarURL);
+    } else if (command === "reset") {
+      const reset = await Tags.update(
+        { rank: 0 },
+        { where: { name: message.author.username } }
+      );
+      if (reset > 0) {
+        message.channel.send("Your rank has been reset!");
+      }
     }
 });
 
