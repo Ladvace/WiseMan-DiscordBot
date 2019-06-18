@@ -44,20 +44,33 @@ client.on("message", async message => {
     where: { name: message.author.username }
   });
   if (user) {
-    console.log(user.get("messages_count"));
+    console.log("messCount", user.get("messages_count"));
     user.increment("messages_count");
-    if (user.get("messages_count") == 50) {
-      user.increment("messages_count");
+    if (user.get("messages_count") == 25) {
+      user.increment("rank");
+      console.log(user.get("rank"));
+      message.channel.send(
+        `${message.author.username} reached lv ${user.get("rank")}`
+      );
+    } else if (user.get("messages_count") == 50) {
+      user.increment("rank");
       message.channel.send(
         `${message.author.username} reached lv ${user.get("rank")}`
       );
     } else if (user.get("messages_count") == 100) {
-      user.increment("messages_count");
+      user.increment("rank");
+      console.log(user.get("messages_count"));
       message.channel.send(
         `${message.author.username} reached lv ${user.get("rank")}`
       );
-    } else if (user.get("messages_count") == 110) {
-      user.increment("messages_count");
+    } else if (user.get("messages_count") == 150) {
+      user.increment("rank");
+      console.log(user.get("messages_count"));
+      message.channel.send(
+        `${message.author.username} reached lv ${user.get("rank")}`
+      );
+    } else if (user.get("messages_count") == 200) {
+      user.increment("rank");
       console.log(user.get("messages_count"));
       message.channel.send(
         `${message.author.username} reached lv ${user.get("rank")}`
@@ -113,7 +126,7 @@ client.on("message", async message => {
 
 client.on("guildMemberAdd", member => {
   // Send the message to a designated channel on a server:
-  const channel = member.guild.channels.find(ch => ch.name === "member-log");
+  const channel = member.guild.channels.find(ch => ch.name === "general");
   // Do nothing if the channel wasn't found on this server
   if (!channel) return;
   // Send the message, mentioning the member
