@@ -1,10 +1,11 @@
 const Discord = require("discord.js");
-const { prefix, token } = require("./config.json");
+const { prefix, token, quotes_api } = require("./config.json");
 const client = new Discord.Client();
 const Sequelize = require("sequelize");
+const axios = require("axios");
 // const db = require("quick.db");
 
-let millisPerHour = 30 * 1000;
+let millisPerHour = 30 * 1000; //1hour
 let millisPastTheHour = Date.now() % millisPerHour;
 let millisToTheHour = millisPerHour - millisPastTheHour;
 
@@ -31,12 +32,32 @@ const Tags = sequelize.define("leaderboard", {
     type: Sequelize.INTEGER,
     defaultValue: 0,
     allowNull: false
+  },
+  time_rank: {
+    type: Sequelize.INTEGER,
+    defaultValue: 0,
+    allowNull: false
   }
 });
 
-client.once("ready", () => {
+client.once("ready", async () => {
   console.log("Ready!");
   Tags.sync();
+
+  client.once("message", async message => {
+    const user = await Tags.findOne({
+      where: { name: message.author.username }
+    });
+
+    setTimeout(function() {
+      console.log("inizio");
+
+      setInterval(function() {
+        user.increment("time_rank");
+        console.log("michele");
+      }, millisPerHour);
+    }, millisToTheHour);
+  });
 });
 
 client.on("message", async message => {
@@ -92,8 +113,6 @@ client.on("message", async message => {
     where: { name: message.author.username }
   });
 
-  console.log("ok");
-
   if (message.content.charAt(0) === prefix)
     if (command === "par") {
       try {
@@ -128,6 +147,15 @@ client.on("message", async message => {
       if (reset > 0) {
         message.channel.send("Your rank has been reset!");
       }
+    } else if (command === "trank") {
+      // const category = await axios.get(quotes_api);
+      // category.map(category =>{
+
+      // } );
+      if (user) {
+        return message.channel.send(`your time-rank is ${user.get("time_rank")}`);
+      }
+      // setTimeout(() => console.log(category), 3000);
     }
 });
 
