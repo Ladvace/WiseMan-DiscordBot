@@ -3,9 +3,8 @@ const { prefix, token, quotes_api } = require("./config.json");
 const client = new Discord.Client();
 const Sequelize = require("sequelize");
 const axios = require("axios");
-// const db = require("quick.db");
 
-let millisPerHour = 30 * 1000; //1hour
+let millisPerHour = 60* 60 * 1000; //1hour
 let millisPastTheHour = Date.now() % millisPerHour;
 let millisToTheHour = millisPerHour - millisPastTheHour;
 
@@ -44,7 +43,7 @@ client.once("ready", async () => {
   console.log("Ready!");
   Tags.sync();
 
-  client.once("message", async message => {
+  client.on("message", async message => {
     const user = await Tags.findOne({
       where: { name: message.author.username }
     });
@@ -54,6 +53,19 @@ client.once("ready", async () => {
 
       setInterval(function() {
         user.increment("time_rank");
+        if (user) {
+          if (user.get("time_rank") == 10) {
+            return message.channel.send(`You are a noob ${user.get("name")}`);
+          } else if (user.get("time_rank") == 50) {
+            return message.channel.send(
+              `your are a calzolaio ${user.get("name")}`
+            );
+          } else if (user.get("time_rank") == 100) {
+            return message.channel.send(
+              `your are a Veteran ${user.get("name")}`
+            );
+          }
+        }
         console.log("michele");
       }, millisPerHour);
     }, millisToTheHour);
@@ -64,6 +76,7 @@ client.on("message", async message => {
   const user = await Tags.findOne({
     where: { name: message.author.username }
   });
+  if (message.author.bot) return;
   if (user) {
     console.log("messCount", user.get("messages_count"));
     user.increment("messages_count");
@@ -132,7 +145,7 @@ client.on("message", async message => {
           "Something went wrong with adding you to the leaderboard."
         );
       }
-    } else if (command === "showrank") {
+    } else if (command === "rank") {
       if (user) {
         return message.channel.send(`your rank is ${user.get("rank")}`);
       }
@@ -148,23 +161,18 @@ client.on("message", async message => {
         message.channel.send("Your rank has been reset!");
       }
     } else if (command === "trank") {
-      // const category = await axios.get(quotes_api);
-      // category.map(category =>{
 
-      // } );
       if (user) {
-        return message.channel.send(`your time-rank is ${user.get("time_rank")}`);
+        return message.channel.send(
+          `${user.get("name")} your time-rank is ${user.get("time_rank")}`
+        );
       }
-      // setTimeout(() => console.log(category), 3000);
     }
 });
 
 client.on("guildMemberAdd", member => {
-  // Send the message to a designated channel on a server:
   const channel = member.guild.channels.find(ch => ch.name === "general");
-  // Do nothing if the channel wasn't found on this server
   if (!channel) return;
-  // Send the message, mentioning the member
   channel.send(
     `Welcome to the server, ${member}, you can partecipate to the leaderboard using the command !par`
   );
