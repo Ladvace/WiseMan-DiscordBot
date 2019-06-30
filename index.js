@@ -4,7 +4,7 @@ const client = new Discord.Client();
 const Sequelize = require("sequelize");
 const axios = require("axios");
 
-let millisPerHour = 60* 60 * 1000; //1hour
+let millisPerHour = 60 * 60 * 1000; //1hour
 let millisPastTheHour = Date.now() % millisPerHour;
 let millisToTheHour = millisPerHour - millisPastTheHour;
 
@@ -42,40 +42,42 @@ const Tags = sequelize.define("leaderboard", {
 client.once("ready", async () => {
   console.log("Ready!");
   Tags.sync();
+  
+  // console.log("TEST", client.channels.get("304893546098458635").members);
+  // console.log("TEST", client.channels.get("304893546098458635").guild);
+  // console.log("TEST", client.channels.map(console.log()));
+  // client.channels.map(x => console.log("cane", x.members));
+// console.log(client.channels.find(channel => channel.name === "General").members);
+client.channels.find(channel => channel.name === "General").members.map(x => console.log("ooOo", x.user)) //finally
 
-  client.on("message", async message => {
-    const user = await Tags.findOne({
-      where: { name: message.author.username }
-    });
+    // Client.channel.get('')
+  // setTimeout(function() {
+  //   console.log("inizio");
+  //   setInterval(function() {
+  // user.increment("time_rank");
+  // if (user) {
+  //   if (user.get("time_rank") == 10) {
+  //     return message.channel.send(`You are a noob ${user.get("name")}`);
+  //   } else if (user.get("time_rank") == 50) {
+  //     return message.channel.send(
+  //       `your are a calzolaio ${user.get("name")}`
+  //     );
+  //   } else if (user.get("time_rank") == 100) {
+  //     return message.channel.send(`your are a Veteran ${user.get("name")}`);
+  //   }
+  // }
+  //     console.log(Guild.members);
+  //   }, millisPerHour);
+  // }, millisToTheHour);
 
-    setTimeout(function() {
-      console.log("inizio");
-
-      setInterval(function() {
-        user.increment("time_rank");
-        if (user) {
-          if (user.get("time_rank") == 10) {
-            return message.channel.send(`You are a noob ${user.get("name")}`);
-          } else if (user.get("time_rank") == 50) {
-            return message.channel.send(
-              `your are a calzolaio ${user.get("name")}`
-            );
-          } else if (user.get("time_rank") == 100) {
-            return message.channel.send(
-              `your are a Veteran ${user.get("name")}`
-            );
-          }
-        }
-        console.log("michele");
-      }, millisPerHour);
-    }, millisToTheHour);
-  });
 });
 
 client.on("message", async message => {
   const user = await Tags.findOne({
     where: { name: message.author.username }
   });
+  if (message.channel.type === "voice"){}
+
   if (message.author.bot) return;
   if (user) {
     console.log("messCount", user.get("messages_count"));
@@ -147,7 +149,12 @@ client.on("message", async message => {
       }
     } else if (command === "rank") {
       if (user) {
-        return message.channel.send(`your rank is ${user.get("rank")}`);
+        let embed = new Discord.RichEmbed()
+          .setAuthor(message.author.username)
+          .setColor("#aa1e32")
+          .addField("Rank", user.get("time_rank"));
+        return message.channel.sendEmbed(embed);
+        // return message.channel.send(`your rank is ${user.get("rank")}`);
       }
       return message.reply(`Could not find your rank`);
     } else if (command === "wima") {
@@ -161,7 +168,6 @@ client.on("message", async message => {
         message.channel.send("Your rank has been reset!");
       }
     } else if (command === "trank") {
-
       if (user) {
         return message.channel.send(
           `${user.get("name")} your time-rank is ${user.get("time_rank")}`
@@ -170,9 +176,26 @@ client.on("message", async message => {
     }
 });
 
-client.on("guildMemberAdd", member => {
+// client.on("guildMemberSpeaking", async (member, speaking) => {
+//   let guild = member.guild;
+//   const user = await Tags.findOne({
+//     where: { name: message.author.username }
+//   });
+// if(member.speaking){
+//   user.increment("time_rank")
+//   guild.defaultChannel.sendMessage("ciao");
+// }
+
+// });
+
+client.on("guildMemberAdd", async member => {
   const channel = member.guild.channels.find(ch => ch.name === "general");
+  const user = await Tags.findOne({
+    where: { name: message.author.username }
+  });
+
   if (!channel) return;
+
   channel.send(
     `Welcome to the server, ${member}, you can partecipate to the leaderboard using the command !par`
   );
