@@ -77,7 +77,6 @@ client.on("message", async message => {
   const user = await Tags.findOne({
     where: { name: message.author.username }
   });
-  user.increment("time_rank");
 
   if (message.channel.type === "voice") {
   }
