@@ -4,7 +4,7 @@ const client = new Discord.Client();
 const Sequelize = require("sequelize");
 const axios = require("axios");
 
-let millisPerHour = 60 * 60 * 1000; //1hour
+let millisPerHour = 5 * 1000; //1hour
 let millisPastTheHour = Date.now() % millisPerHour;
 let millisToTheHour = millisPerHour - millisPastTheHour;
 
@@ -42,41 +42,45 @@ const Tags = sequelize.define("leaderboard", {
 client.once("ready", async () => {
   console.log("Ready!");
   Tags.sync();
-  
-  // console.log("TEST", client.channels.get("304893546098458635").members);
-  // console.log("TEST", client.channels.get("304893546098458635").guild);
-  // console.log("TEST", client.channels.map(console.log()));
-  // client.channels.map(x => console.log("cane", x.members));
-// console.log(client.channels.find(channel => channel.name === "General").members);
-client.channels.find(channel => channel.name === "General").members.map(x => console.log("ooOo", x.user)) //finally
 
-    // Client.channel.get('')
-  // setTimeout(function() {
-  //   console.log("inizio");
-  //   setInterval(function() {
-  // user.increment("time_rank");
-  // if (user) {
-  //   if (user.get("time_rank") == 10) {
-  //     return message.channel.send(`You are a noob ${user.get("name")}`);
-  //   } else if (user.get("time_rank") == 50) {
-  //     return message.channel.send(
-  //       `your are a calzolaio ${user.get("name")}`
-  //     );
-  //   } else if (user.get("time_rank") == 100) {
-  //     return message.channel.send(`your are a Veteran ${user.get("name")}`);
-  //   }
-  // }
-  //     console.log(Guild.members);
-  //   }, millisPerHour);
-  // }, millisToTheHour);
+  // client.channels.map(x =>  x.members == null ? console.log("peppe") : console.log("gino"));
 
+  // client.channels.map(x => console.log(x));
+  // client.channels.find(channel => channel.name === ).members.map(x => console.log("ooOo", x.user));
+
+  client.channels.map(x => {
+    if (x.type === "voice" ) {
+      client.channels
+      .find(channel => channel.name === x.name)
+      .members.map(async y => {
+        const user = await Tags.findOne({
+          where: { name: y.user.username }
+        });
+          console.log(y.user);
+          if (y.user) {
+            setTimeout(function() {
+              console.log("inizio");
+              setInterval(function() {
+                user.increment("time_rank");
+                setTimeout(() => console.log(user.get("time_rank")), 1000);
+              }, millisPerHour);
+            }, millisToTheHour);
+          }
+        });
+    }
+  });
+
+  // client.channels.find(channel => channel.name === "General").members.map(x => console.log("ooOo", x.user)) //finally
 });
 
 client.on("message", async message => {
   const user = await Tags.findOne({
     where: { name: message.author.username }
   });
-  if (message.channel.type === "voice"){}
+  user.increment("time_rank");
+
+  if (message.channel.type === "voice") {
+  }
 
   if (message.author.bot) return;
   if (user) {
@@ -175,18 +179,6 @@ client.on("message", async message => {
       }
     }
 });
-
-// client.on("guildMemberSpeaking", async (member, speaking) => {
-//   let guild = member.guild;
-//   const user = await Tags.findOne({
-//     where: { name: message.author.username }
-//   });
-// if(member.speaking){
-//   user.increment("time_rank")
-//   guild.defaultChannel.sendMessage("ciao");
-// }
-
-// });
 
 client.on("guildMemberAdd", async member => {
   const channel = member.guild.channels.find(ch => ch.name === "general");
