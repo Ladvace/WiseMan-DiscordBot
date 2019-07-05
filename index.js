@@ -39,6 +39,9 @@ const Tags = sequelize.define("leaderboard", {
   }
 });
 
+let timer = 0;
+let interval = 0;
+
 client.once("ready", async () => {
   console.log("Ready!");
   Tags.sync();
@@ -46,29 +49,46 @@ client.once("ready", async () => {
   // client.channels.map(x =>  x.members == null ? console.log("peppe") : console.log("gino"));
 
   // client.channels.map(x => console.log(x));
-  // client.channels.find(channel => channel.name === ).members.map(x => console.log("ooOo", x.user));
+  // client.channels.find(channel => channel.name === "General").members.map(x => console.log("ooOo", x.user));
 
   client.channels.map(x => {
-    if (x.type === "voice" ) {
-      client.channels
-      .find(channel => channel.name === x.name)
-      .members.map(async y => {
+    if (x.type === "voice") {
+      x.members.map(async y => {
+        
+
         const user = await Tags.findOne({
           where: { name: y.user.username }
         });
-          console.log(y.user);
-          if (y.user) {
-            setTimeout(function() {
-              console.log("inizio");
-              setInterval(function() {
-                user.increment("time_rank");
-                setTimeout(() => console.log(user.get("time_rank")), 1000);
-              }, millisPerHour);
-            }, millisToTheHour);
-          }
-        });
+        timer = setTimeout(function() {
+          console.log("inizio");
+          interval = setInterval(function() {
+            user.increment("time_rank");
+          }, millisPerHour);
+        }, millisToTheHour);
+      });
     }
   });
+
+  // client.channels.map(x => {
+  //   if (x.type === "voice") {
+  //     client.channels
+  //       .find(channel => channel.name === x.name)
+  //       .members.map(async y => {
+  //         if (y.user) {
+  //           const user = await Tags.findOne({
+  //             where: { name: y.user.username }
+  //           });
+  //           setTimeout(function() {
+  //             console.log("inizio");
+  //             setInterval(function() {
+  //               user.increment("time_rank");
+  //               setTimeout(() => console.log(user.get("time_rank")), 1000);
+  //             }, millisPerHour);
+  //           }, millisToTheHour);
+  //         }
+  //       });
+  //   }
+  // });
 
   // client.channels.find(channel => channel.name === "General").members.map(x => console.log("ooOo", x.user)) //finally
 });
@@ -83,11 +103,11 @@ client.on("message", async message => {
 
   if (message.author.bot) return;
   if (user) {
-    console.log("messCount", user.get("messages_count"));
+    
     user.increment("messages_count");
     if (user.get("messages_count") == 25) {
       user.increment("rank");
-      console.log(user.get("rank"));
+     
       message.channel.send(
         `${message.author.username} reached lv ${user.get("rank")}`
       );
@@ -98,19 +118,19 @@ client.on("message", async message => {
       );
     } else if (user.get("messages_count") == 100) {
       user.increment("rank");
-      console.log(user.get("messages_count"));
+      
       message.channel.send(
         `${message.author.username} reached lv ${user.get("rank")}`
       );
     } else if (user.get("messages_count") == 150) {
       user.increment("rank");
-      console.log(user.get("messages_count"));
+      
       message.channel.send(
         `${message.author.username} reached lv ${user.get("rank")}`
       );
     } else if (user.get("messages_count") == 200) {
       user.increment("rank");
-      console.log(user.get("messages_count"));
+      
 
       message.channel.send(`${message.author.username} ranked resetted!`);
     }
@@ -121,6 +141,40 @@ client.on("message", async message => {
       messages_count: 0,
       rank: 0
     });
+  }
+});
+
+client.on("voiceStateUpdate", async (oldMember, newMember) => {
+  let newUserChannel = newMember.voiceChannel;
+  let oldUserChannel = oldMember.voiceChannel;
+
+  if (oldUserChannel === undefined && newUserChannel !== undefined) {
+    // console.log(newUserChannel)
+    const user = await Tags.findOne({
+      where: { name: newMember.user.username }
+    });
+
+      if (newUserChannel.type === "voice") {
+        // x.members.map(async y => {
+          const user = await Tags.findOne({
+            where: { name: newMember.user.username }
+          });
+          timer = setTimeout(function() {
+            console.log("inizio");
+            interval = setInterval(function() {
+              user.increment("time_rank");
+            }, millisPerHour);
+          }, millisToTheHour);
+        // });
+      }
+
+  } else if (newUserChannel === undefined) {
+    // console.log(oldUserChannel);
+    // User leaves a voice channel
+    if (timer && interval) {
+      clearTimeout(timer);
+      clearInterval(interval);
+    }
   }
 });
 
@@ -145,7 +199,7 @@ client.on("message", async message => {
         if (e.name === "SequelizeUniqueConstraintError") {
           return message.reply("You are already added.");
         }
-        console.log(e);
+        
         return message.reply(
           "Something went wrong with adding you to the leaderboard."
         );
@@ -156,7 +210,7 @@ client.on("message", async message => {
           .setAuthor(message.author.username)
           .setColor("#aa1e32")
           .addField("Rank", user.get("time_rank"));
-        return message.channel.sendEmbed(embed);
+        return message.channel.send(embed);
         // return message.channel.send(`your rank is ${user.get("rank")}`);
       }
       return message.reply(`Could not find your rank`);
@@ -164,7 +218,7 @@ client.on("message", async message => {
       message.channel.send(message.author.avatarURL);
     } else if (command === "reset") {
       const reset = await Tags.update(
-        { rank: 0 },
+        { time_rank: 0 },
         { where: { name: message.author.username } }
       );
       if (reset > 0) {
