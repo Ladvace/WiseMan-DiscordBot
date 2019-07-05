@@ -176,7 +176,8 @@ client.on("message", async message => {
       if (user) {
         let embed = new Discord.RichEmbed()
           .setAuthor(message.author.username)
-          .setColor("#aa1e32")
+          .setColor("#008140")
+          .setThumbnail(message.author.avatarURL)
           .addField("Rank", user.get("time_rank"));
         return message.channel.send(embed);
         // return message.channel.send(`your rank is ${user.get("rank")}`);
@@ -197,16 +198,42 @@ client.on("message", async message => {
         { rank: 0 },
         { where: { name: message.author.username } }
       );
-      
+
       if (reset > 0) {
         message.channel.send("Your text-rank has been reset!");
       }
     } else if (command === "trank") {
       if (user) {
-        return message.channel.send(
-          `${user.get("name")} your time-rank is ${user.get("time_rank")}`
-        );
+        let embed = new Discord.RichEmbed()
+          .setAuthor(message.author.username)
+          .setThumbnail(message.author.avatarURL)
+          .setColor("#008140")
+          .addField("Rank", user.get("time_rank"));
+        return message.channel.send(embed);
       }
+    } else if (command === "help") {
+      let embed = new Discord.RichEmbed()
+        .setTitle("Commands")
+        .setThumbnail("https://i.imgur.com/1MrC4yt.png")
+        .setColor("#aa1e32")
+        .addField("!rank", "It shows you the text-based rank")
+        .addField("!trank", "It shows you the time-based rank")
+        .addField("!reset", "reset the text-based rank")
+        .addField("!timereset", "reset the time-based rank")
+        .addField("!wima", "It shows your profile image")
+        .addField("!wima", "It shows your profile image")
+
+      return message.channel.send(embed);
+    }else if (command === "github") {
+      let embed = new Discord.RichEmbed()
+        .setTitle("GitHub")
+        .setColor("#aa1e32")
+        .setURL("https://github.com/Ladvace/DiscordBot")
+        .setThumbnail("https://i.imgur.com/1MrC4yt.png", "")
+        .setDescription("This is my repository!")
+      
+
+      return message.channel.send(embed);
     }
 });
 
