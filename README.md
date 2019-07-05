@@ -1,3 +1,8 @@
+
+<p align="center">
+    <img width="800" height="auto" src="https://imgur.com/a/K5eadva" alt="WiseMan" />
+</p>
+
 ## WiseMan - Discord Bot 🤖 
 
 This bot allow you to level up based on the time you spend in a vocal channel and how much you write in a text channel
