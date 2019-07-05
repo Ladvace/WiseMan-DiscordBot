@@ -15,7 +15,7 @@ This bot allow you to level up based on the time you spend in a vocal channel an
  - **reset** - It reset the text-based score.
  - **timereset** - It reset the time-based score.
 
- ### ▶️ Steps
+ ### Steps ▶️
 
 Install the dependencies
  ```
