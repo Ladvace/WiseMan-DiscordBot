@@ -1,5 +1,3 @@
 {
-    "prefix": "!",
-    "token": "NTg5NjkzMjQ0NDU2MDQyNDk3.XQp_Vw.3lUm8L27GVUSmFAso32GfdetXWg",
-    "quotes_api": "https://www.forbes.com/forbesapi/thought/uri.json?enrich=true&query=1&relatedlimit=100"
+    "prefix": "!"
 }

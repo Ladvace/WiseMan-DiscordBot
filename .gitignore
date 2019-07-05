@@ -7,3 +7,4 @@ database.sqlite
 logs
 *.log
 *.sqlite
+*.env
