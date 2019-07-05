@@ -14,6 +14,8 @@ This bot allow you to level up based on the time you spend in a vocal channel an
  - **wima** - It shows you your profile image.
  - **reset** - It reset the text-based score.
  - **timereset** - It reset the time-based score.
+ - **github** - It shows you the github repo link.
+ - **help** - It shows you all the commands.
 
  ### Steps ▶️
 
