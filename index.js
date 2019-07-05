@@ -1,6 +1,6 @@
 const Discord = require("discord.js");
 const { prefix } = require("./config.json");
-const env = require('dotenv').config()
+const env = require("dotenv").config();
 const client = new Discord.Client();
 const Sequelize = require("sequelize");
 
@@ -30,7 +30,6 @@ const Tags = sequelize.define("leaderboard", {
   rank: {
     type: Sequelize.INTEGER,
 
-    
     defaultValue: 0,
     allowNull: false
   },
@@ -51,7 +50,6 @@ client.once("ready", async () => {
   client.channels.map(x => {
     if (x.type === "voice") {
       x.members.map(async y => {
-
         const user = await Tags.findOne({
           where: { name: y.user.username }
         });
@@ -59,14 +57,13 @@ client.once("ready", async () => {
         timers[y.user.username] = setTimeout(function() {
           console.log("inizio");
           intervals[y.user.username] = setInterval(function() {
-            console.log(y.user.username, 'INTERVAL INIT');
+            console.log(y.user.username, "INTERVAL INIT");
             user.increment("time_rank");
           }, millisPerHour);
         }, millisToTheHour);
       });
     }
   });
-
 });
 
 client.on("message", async message => {
@@ -187,13 +184,22 @@ client.on("message", async message => {
       return message.reply(`Could not find your rank`);
     } else if (command === "wima") {
       message.channel.send(message.author.avatarURL);
-    } else if (command === "reset") {
+    } else if (command === "timereset") {
       const reset = await Tags.update(
         { time_rank: 0 },
         { where: { name: message.author.username } }
       );
       if (reset > 0) {
-        message.channel.send("Your rank has been reset!");
+        message.channel.send("Your time-rank has been reset!");
+      }
+    } else if (command === "reset") {
+      const reset = await Tags.update(
+        { rank: 0 },
+        { where: { name: message.author.username } }
+      );
+      
+      if (reset > 0) {
+        message.channel.send("Your text-rank has been reset!");
       }
     } else if (command === "trank") {
       if (user) {
