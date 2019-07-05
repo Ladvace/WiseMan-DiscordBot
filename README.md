@@ -3,12 +3,12 @@
 This bot allow you to level up based on the time you spend in a vocal channel and how much you write in a text channel
 
 ## Commands 🎨
- 
- !trank - It shows you your time-based score.
- !rank - It shows you your text-based score.
- !wima - It shows you your profile image.
- !reset - It reset the text-based score.
- !timereset - It reset the time-based score.
+ You need to add the prefix `!` before the command e.g: `!rank`.
+ - **trank** - It shows you your time-based score.
+ - **rank** - It shows you your text-based score.
+ - **wima** - It shows you your profile image.
+ - **reset** - It reset the text-based score.
+ - **timereset** - It reset the time-based score.
 
  ### ▶️ Steps
 
