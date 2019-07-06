@@ -58,7 +58,6 @@ client.once("ready", async () => {
         timers[y.user.username] = setTimeout(function() {
           console.log("inizio");
           intervals[y.user.username] = setInterval(function() {
-            console.log(y.user.username, "INTERVAL INIT");
             user.increment("time_rank");
           }, millisPerHour);
         }, millisToTheHour);
@@ -72,10 +71,10 @@ client.on("message", async message => {
     where: { name: message.author.username }
   });
 
-  if (message.channel.type === "voice") {
-  }
+  console.log("message", message.content);
 
   if (message.author.bot) return;
+
   if (user) {
     user.increment("messages_count");
     if (user.get("messages_count") == 25) {
@@ -241,7 +240,7 @@ client.on("message", async message => {
 client.on("guildMemberAdd", async member => {
   const channel = member.guild.channels.find(ch => ch.name === "general");
   const user = await Tags.findOne({
-    where: { name: message.author.username }
+    where: { name: member.user.username }
   });
 
   if (!channel) return;

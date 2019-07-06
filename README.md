@@ -30,6 +30,10 @@ Start the bot
 $ npm start
  ```
 
+## If you have any problems or question/features feel free to contact me! 🔧😃
+
+
+
  ## Authors ❤️
   
   - **Gianmarco Cavallo** (ladvace) - [Github Profile](https://github.com/Ladvace)
