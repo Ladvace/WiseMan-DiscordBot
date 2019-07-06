@@ -179,7 +179,7 @@ client.on("message", async message => {
           .setAuthor(message.author.username)
           .setColor("#008140")
           .setThumbnail(message.author.avatarURL)
-          .addField("Rank", user.get("time_rank"));
+          .addField("Rank", user.get("rank"));
         return message.channel.send(embed);
         // return message.channel.send(`your rank is ${user.get("rank")}`);
       }
