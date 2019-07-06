@@ -12,9 +12,10 @@ const sequelize = new Sequelize("database", "user", "password", {
   host: "localhost",
   dialect: "sqlite",
   logging: false,
-  operatorsAliases: false,
+  // operatorsAliases: false,
   // SQLite only
   storage: "database.sqlite"
+  
 });
 
 const Tags = sequelize.define("leaderboard", {
@@ -208,7 +209,7 @@ client.on("message", async message => {
           .setAuthor(message.author.username)
           .setThumbnail(message.author.avatarURL)
           .setColor("#008140")
-          .addField("Rank", user.get("time_rank"));
+          .addField("Time-Rank", user.get("time_rank"));
         return message.channel.send(embed);
       }
     } else if (command === "help") {
