@@ -58,7 +58,9 @@ client.once("ready", async () => {
         timers[y.user.username] = setTimeout(function() {
           console.log("inizio");
           intervals[y.user.username] = setInterval(function() {
-            user.increment("time_rank");
+            if (user){
+              user.increment("time_rank");
+            }
           }, millisPerHour);
         }, millisToTheHour);
       });
@@ -71,7 +73,7 @@ client.on("message", async message => {
     where: { name: message.author.username }
   });
 
-  console.log("message", message.content);
+  // console.log("message", message.content);
 
   if (message.author.bot) return;
 
@@ -132,7 +134,9 @@ client.on("voiceStateUpdate", async (oldMember, newMember) => {
       });
       timers[newMember.user.username] = setTimeout(() => {
         intervals[newMember.user.username] = setInterval(() => {
-          user.increment("time_rank");
+          if(user){
+            user.increment("time_rank");
+          }
         }, millisPerHour);
       }, millisToTheHour);
     }

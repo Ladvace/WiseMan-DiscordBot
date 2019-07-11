@@ -23,11 +23,27 @@ This bot allow you to level up based on the time you spend in a vocal channel an
 Install the dependencies
  ```
 $ npm i
+
+ ```
+Create an .ENV file and replace ```*TOKEN*``` with the token.
+You can take the token from https://discordapp.com/developers/applications/*botid* > Bot
+ ```
+$ TOKEN="*TOKEN*"
  ```
 
 Start the bot
  ```
 $ npm start
+ ```
+ 
+ ## Configuration ⚙️ 
+
+ - The only configuration is the prefix in the ```config.json```.
+
+ ```
+{
+    "prefix": "!"
+}
  ```
 
  ## Authors ❤️
