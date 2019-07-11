@@ -1,10 +1,10 @@
 const Discord = require("discord.js");
-const { prefix } = require("./config.json");
+const { prefix, minutes } = require("./config.json");
 const env = require("dotenv").config();
 const client = new Discord.Client();
 const Sequelize = require("sequelize");
 
-let millisPerHour = 60 * 60 * 1000; //1hour
+let millisPerHour = 60 * minutes * 1000; //1hour
 let millisPastTheHour = Date.now() % millisPerHour;
 let millisToTheHour = millisPerHour - millisPastTheHour;
 
@@ -15,7 +15,7 @@ const sequelize = new Sequelize("database", "user", "password", {
   // operatorsAliases: false,
   // SQLite only
   storage: "database.sqlite"
-  
+
 });
 
 const Tags = sequelize.define("leaderboard", {
@@ -44,6 +44,8 @@ const Tags = sequelize.define("leaderboard", {
 let timers = {};
 let intervals = {};
 
+
+
 client.once("ready", async () => {
   console.log("Ready!");
   Tags.sync();
@@ -55,10 +57,10 @@ client.once("ready", async () => {
           where: { name: y.user.username }
         });
 
-        timers[y.user.username] = setTimeout(function() {
+        timers[y.user.username] = setTimeout(function () {
           console.log("inizio");
-          intervals[y.user.username] = setInterval(function() {
-            if (user){
+          intervals[y.user.username] = setInterval(function () {
+            if (user) {
               user.increment("time_rank");
             }
           }, millisPerHour);
@@ -134,7 +136,7 @@ client.on("voiceStateUpdate", async (oldMember, newMember) => {
       });
       timers[newMember.user.username] = setTimeout(() => {
         intervals[newMember.user.username] = setInterval(() => {
-          if(user){
+          if (user) {
             user.increment("time_rank");
           }
         }, millisPerHour);
@@ -228,14 +230,14 @@ client.on("message", async message => {
         .addField("!wima", "It shows your profile image")
 
       return message.channel.send(embed);
-    }else if (command === "github") {
+    } else if (command === "github") {
       let embed = new Discord.RichEmbed()
         .setTitle("GitHub")
         .setColor("#aa1e32")
         .setURL("https://github.com/Ladvace/DiscordBot")
         .setThumbnail("https://i.imgur.com/1MrC4yt.png", "")
         .setDescription("This is my repository!")
-      
+
 
       return message.channel.send(embed);
     }

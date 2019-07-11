@@ -37,11 +37,14 @@ $ npm start
 
  ## Configuration ⚙️ 
 
- - The only configuration is the prefix in the ```config.json```.
+ - The only configurations are the prefix and the minutes  in the ```config.json```.
+
+   The ```minutes``` are the minutes for wich every time the bot level up you (i.g: by default the bot update your rank every hour for the time-based system). 
 
  ```
 {
-    "prefix": "!"
+    "prefix": "!",
+    "minutes": 60
 }
  ```
 
