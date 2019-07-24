@@ -31,7 +31,7 @@ const Tags = sequelize.define("leaderboard", {
   rank: {
     type: Sequelize.INTEGER,
 
-    defaultValue: 0,
+    defaultValue: 1,
     allowNull: false
   },
   time_rank: {
@@ -70,54 +70,9 @@ client.once("ready", async () => {
   });
 });
 
-client.on("message", async message => {
-  const user = await Tags.findOne({
-    where: { name: message.author.username }
-  });
-
-  // console.log("message", message.content);
-
-  if (message.author.bot) return;
-
-  if (user) {
-    user.increment("messages_count");
-    if (user.get("messages_count") == 25) {
-      user.increment("rank");
-
-      message.channel.send(
-        `${message.author.username} reached lv ${user.get("rank")}`
-      );
-    } else if (user.get("messages_count") == 50) {
-      user.increment("rank");
-      message.channel.send(
-        `${message.author.username} reached lv ${user.get("rank")}`
-      );
-    } else if (user.get("messages_count") == 100) {
-      user.increment("rank");
-
-      message.channel.send(
-        `${message.author.username} reached lv ${user.get("rank")}`
-      );
-    } else if (user.get("messages_count") == 150) {
-      user.increment("rank");
-
-      message.channel.send(
-        `${message.author.username} reached lv ${user.get("rank")}`
-      );
-    } else if (user.get("messages_count") == 200) {
-      user.increment("rank");
-
-      message.channel.send(`${message.author.username} ranked resetted!`);
-    }
-    return;
-  } else {
-    const user = await Tags.create({
-      name: message.author.username,
-      messages_count: 0,
-      rank: 0
-    });
-  }
-});
+// client.on("message", async message => {
+ 
+// });
 
 client.on("voiceStateUpdate", async (oldMember, newMember) => {
   let newUserChannel = newMember.voiceChannel;
@@ -159,6 +114,49 @@ client.on("message", async message => {
     where: { name: message.author.username }
   });
 
+  if (message.author.bot) return;
+  
+  console.log("message", message.content, user.get("messages_count"));
+
+  if (user) {
+    user.increment("messages_count");
+    if (user.get("messages_count") == 25) {
+      user.increment("rank");
+
+      return message.channel.send(
+        `${message.author.username} reached lv ${user.get("rank")}`
+      );
+    } else if (user.get("messages_count") == 50) {
+      user.increment("rank");
+      return message.channel.send(
+        `${message.author.username} reached lv ${user.get("rank")}`
+      );
+    } else if (user.get("messages_count") == 100) {
+      user.increment("rank");
+
+      return message.channel.send(
+        `${message.author.username} reached lv ${user.get("rank")}`
+      );
+    } else if (user.get("messages_count") == 150) {
+      user.increment("rank");
+
+      return message.channel.send(
+        `${message.author.username} reached lv ${user.get("rank")}`
+      );
+    } else if (user.get("messages_count") == 200) {
+      user.increment("rank");
+
+      return message.channel.send(`${message.author.username} ranked resetted!`);
+    }
+  } else {
+    const user = await Tags.create({
+      name: message.author.username,
+      messages_count: 0,
+      rank: 0
+    });
+  }
+
+
   if (message.content.charAt(0) === prefix)
     if (command === "par") {
       try {
@@ -197,17 +195,19 @@ client.on("message", async message => {
         { where: { name: message.author.username } }
       );
       if (reset > 0) {
-        message.channel.send("Your time-rank has been reset!");
+        return message.channel.send("Your time-rank has been reset!");
       }
     } else if (command === "reset") {
+
       const reset = await Tags.update(
         { rank: 0 },
         { where: { name: message.author.username } }
       );
 
-      if (reset > 0) {
-        message.channel.send("Your text-rank has been reset!");
-      }
+      console.log(reset);
+      return message.channel.send("Your text-rank has been reset!");
+      // if (reset > 0) {
+      // }
     } else if (command === "trank") {
       if (user) {
         let embed = new Discord.RichEmbed()
