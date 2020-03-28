@@ -15,7 +15,6 @@ const sequelize = new Sequelize("database", "user", "password", {
   // operatorsAliases: false,
   // SQLite only
   storage: "database.sqlite"
-
 });
 
 const Tags = sequelize.define("leaderboard", {
@@ -44,8 +43,6 @@ const Tags = sequelize.define("leaderboard", {
 let timers = {};
 let intervals = {};
 
-
-
 client.once("ready", async () => {
   console.log("Ready!");
   Tags.sync();
@@ -57,9 +54,9 @@ client.once("ready", async () => {
           where: { name: y.user.username }
         });
 
-        timers[y.user.username] = setTimeout(function () {
+        timers[y.user.username] = setTimeout(function() {
           console.log("inizio");
-          intervals[y.user.username] = setInterval(function () {
+          intervals[y.user.username] = setInterval(function() {
             if (user) {
               user.increment("time_rank");
             }
@@ -71,7 +68,7 @@ client.once("ready", async () => {
 });
 
 // client.on("message", async message => {
- 
+
 // });
 
 client.on("voiceStateUpdate", async (oldMember, newMember) => {
@@ -115,38 +112,56 @@ client.on("message", async message => {
   });
 
   if (message.author.bot) return;
-  
-  console.log("message", message.content, user.get("messages_count"));
+
+  // user.get("messages_count")
 
   if (user) {
-    user.increment("messages_count");
-    if (user.get("messages_count") == 25) {
-      user.increment("rank");
-
-      return message.channel.send(
-        `${message.author.username} reached lv ${user.get("rank")}`
+    try {
+      console.log(
+        "message",
+        message.content,
+        command,
+        user.get("messages_count")
       );
-    } else if (user.get("messages_count") == 50) {
-      user.increment("rank");
-      return message.channel.send(
-        `${message.author.username} reached lv ${user.get("rank")}`
-      );
-    } else if (user.get("messages_count") == 100) {
-      user.increment("rank");
+      user.increment("messages_count");
+      if (user.get("messages_count") == 25) {
+        user.increment("rank");
+        console.log(user.get("rank"));
 
-      return message.channel.send(
-        `${message.author.username} reached lv ${user.get("rank")}`
-      );
-    } else if (user.get("messages_count") == 150) {
-      user.increment("rank");
+        return message.channel.send(
+          `${message.author.username} reached lv 1`
+        );
+      } else if (user.get("messages_count") == 50) {
+        user.increment("rank");
+        return message.channel.send(
+          `${message.author.username} reached lv ${user.get("rank")}`
+        );
+      } else if (user.get("messages_count") == 100) {
+        user.increment("rank");
 
-      return message.channel.send(
-        `${message.author.username} reached lv ${user.get("rank")}`
-      );
-    } else if (user.get("messages_count") == 200) {
-      user.increment("rank");
+        return message.channel.send(
+          `${message.author.username} reached lv ${user.get("rank")}`
+        );
+      } else if (user.get("messages_count") == 150) {
+        user.increment("rank");
 
-      return message.channel.send(`${message.author.username} ranked resetted!`);
+        return message.channel.send(
+          `${message.author.username} reached lv ${user.get("rank")}`
+        );
+      } else if (user.get("messages_count") == 200) {
+        user.increment("rank");
+
+        return message.channel.send(
+          `${message.author.username} ranked resetted!`
+        );
+      }
+    } catch (e) {
+      console.log("USER DO NOT EXIST");
+      const user = await Tags.create({
+        name: message.author.username,
+        messages_count: 0,
+        rank: 0
+      });
     }
   } else {
     const user = await Tags.create({
@@ -156,8 +171,7 @@ client.on("message", async message => {
     });
   }
 
-
-  if (message.content.charAt(0) === prefix)
+  if (message.content.charAt(0) === prefix) {
     if (command === "par") {
       try {
         const user = await Tags.create({
@@ -187,7 +201,7 @@ client.on("message", async message => {
         // return message.channel.send(`your rank is ${user.get("rank")}`);
       }
       return message.reply(`Could not find your rank`);
-    } else if (command === "wima") {
+    } else if (command === "propic") {
       message.channel.send(message.author.avatarURL);
     } else if (command === "timereset") {
       const reset = await Tags.update(
@@ -198,7 +212,6 @@ client.on("message", async message => {
         return message.channel.send("Your time-rank has been reset!");
       }
     } else if (command === "reset") {
-
       const reset = await Tags.update(
         { rank: 0 },
         { where: { name: message.author.username } }
@@ -227,7 +240,7 @@ client.on("message", async message => {
         .addField("!reset", "reset the text-based rank")
         .addField("!timereset", "reset the time-based rank")
         .addField("!wima", "It shows your profile image")
-        .addField("!wima", "It shows your profile image")
+        .addField("!wima", "It shows your profile image");
 
       return message.channel.send(embed);
     } else if (command === "github") {
@@ -236,11 +249,11 @@ client.on("message", async message => {
         .setColor("#aa1e32")
         .setURL("https://github.com/Ladvace/DiscordBot")
         .setThumbnail("https://i.imgur.com/1MrC4yt.png", "")
-        .setDescription("This is my repository!")
-
+        .setDescription("This is my repository!");
 
       return message.channel.send(embed);
     }
+  }
 });
 
 client.on("guildMemberAdd", async member => {
@@ -255,5 +268,5 @@ client.on("guildMemberAdd", async member => {
     `Welcome to the server, ${member}, you can partecipate to the leaderboard using the command !par`
   );
 });
-
+console.log(process.env.TOKEN);
 client.login(process.env.TOKEN);
