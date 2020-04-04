@@ -14,30 +14,30 @@ const sequelize = new Sequelize("database", "user", "password", {
   logging: false,
   // operatorsAliases: false,
   // SQLite only
-  storage: "database.sqlite"
+  storage: "database.sqlite",
 });
 
 const Tags = sequelize.define("leaderboard", {
   name: {
     type: Sequelize.STRING,
-    unique: true
+    unique: true,
   },
   messages_count: {
     type: Sequelize.INTEGER,
     defaultValue: 0,
-    allowNull: false
+    allowNull: false,
   },
   rank: {
     type: Sequelize.INTEGER,
 
     defaultValue: 1,
-    allowNull: false
+    allowNull: false,
   },
   time_rank: {
     type: Sequelize.INTEGER,
     defaultValue: 0,
-    allowNull: false
-  }
+    allowNull: false,
+  },
 });
 
 let timers = {};
@@ -47,21 +47,22 @@ client.once("ready", async () => {
   console.log("Ready!");
   Tags.sync();
 
-  client.channels.map(x => {
+  client.channels.map((x) => {
     if (x.type === "voice") {
-      x.members.map(async y => {
+      x.members.map(async (y) => {
         const user = await Tags.findOne({
-          where: { name: y.user.username }
+          where: { name: y.user.username },
         });
 
-        timers[y.user.username] = setTimeout(function() {
-          console.log("inizio");
-          intervals[y.user.username] = setInterval(function() {
+        timers[y.user.username] = setTimeout(function () {
+          console.log("start");
+          intervals[y.user.username] = setInterval(function () {
             if (user) {
               user.increment("time_rank");
             }
           }, millisPerHour);
         }, millisToTheHour);
+      
       });
     }
   });
@@ -79,12 +80,12 @@ client.on("voiceStateUpdate", async (oldMember, newMember) => {
     // User join a voice channel
 
     const user = await Tags.findOne({
-      where: { name: newMember.user.username }
+      where: { name: newMember.user.username },
     });
 
     if (newUserChannel.type === "voice") {
       const user = await Tags.findOne({
-        where: { name: newMember.user.username }
+        where: { name: newMember.user.username },
       });
       timers[newMember.user.username] = setTimeout(() => {
         intervals[newMember.user.username] = setInterval(() => {
@@ -93,22 +94,24 @@ client.on("voiceStateUpdate", async (oldMember, newMember) => {
           }
         }, millisPerHour);
       }, millisToTheHour);
+      // timers[newMember.user.username];
     }
   } else if (newUserChannel === undefined) {
     // User leaves a voice channel
 
     if (timers[newMember.user.username] && intervals[newMember.user.username]) {
+      console.log("exit");
       clearTimeout(timers[newMember.user.username]);
       clearInterval(intervals[newMember.user.username]);
     }
   }
 });
 
-client.on("message", async message => {
+client.on("message", async (message) => {
   const input = message.content;
   const command = input.charAt(0) === prefix ? input.substr(1) : input;
   const user = await Tags.findOne({
-    where: { name: message.author.username }
+    where: { name: message.author.username },
   });
 
   if (message.author.bot) return;
@@ -121,16 +124,14 @@ client.on("message", async message => {
         "message",
         message.content,
         command,
-        user.get("messages_count")
+        user.get("messages_count"),
+        user.get("rank")
       );
       user.increment("messages_count");
       if (user.get("messages_count") == 25) {
         user.increment("rank");
-        console.log(user.get("rank"));
 
-        return message.channel.send(
-          `${message.author.username} reached lv 1`
-        );
+        return message.channel.send(`${message.author.username} reached lv 1`);
       } else if (user.get("messages_count") == 50) {
         user.increment("rank");
         return message.channel.send(
@@ -156,18 +157,18 @@ client.on("message", async message => {
         );
       }
     } catch (e) {
-      console.log("USER DO NOT EXIST");
+      console.log("user do not exist");
       const user = await Tags.create({
         name: message.author.username,
         messages_count: 0,
-        rank: 0
+        rank: 0,
       });
     }
   } else {
     const user = await Tags.create({
       name: message.author.username,
       messages_count: 0,
-      rank: 0
+      rank: 0,
     });
   }
 
@@ -177,7 +178,7 @@ client.on("message", async message => {
         const user = await Tags.create({
           name: message.author.username,
           messages_count: 0,
-          rank: 0
+          rank: 0,
         });
 
         return message.reply(`${user.name} added to the leaderboard.`);
@@ -213,7 +214,7 @@ client.on("message", async message => {
       }
     } else if (command === "reset") {
       const reset = await Tags.update(
-        { rank: 0 },
+        { rank: 0, messages_count: 0 },
         { where: { name: message.author.username } }
       );
 
@@ -256,10 +257,10 @@ client.on("message", async message => {
   }
 });
 
-client.on("guildMemberAdd", async member => {
-  const channel = member.guild.channels.find(ch => ch.name === "general");
+client.on("guildMemberAdd", async (member) => {
+  const channel = member.guild.channels.find((ch) => ch.name === "general");
   const user = await Tags.findOne({
-    where: { name: member.user.username }
+    where: { name: member.user.username },
   });
 
   if (!channel) return;
@@ -268,5 +269,5 @@ client.on("guildMemberAdd", async member => {
     `Welcome to the server, ${member}, you can partecipate to the leaderboard using the command !par`
   );
 });
-console.log(process.env.TOKEN);
+
 client.login(process.env.TOKEN);
