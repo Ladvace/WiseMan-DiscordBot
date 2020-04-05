@@ -18,9 +18,18 @@ const sequelize = new Sequelize("database", "user", "password", {
 });
 
 const Tags = sequelize.define("leaderboard", {
-  name: {
+  // serverName: {
+  //   type: Sequelize.STRING,
+  //   unique: true,
+  //   defaultValue: null,
+  //   allowNull: false,
+  // },
+  id: {
     type: Sequelize.STRING,
     unique: true,
+    primaryKey: true,
+    defaultValue: null,
+    allowNull: false,
   },
   messages_count: {
     type: Sequelize.INTEGER,
@@ -51,18 +60,17 @@ client.once("ready", async () => {
     if (x.type === "voice") {
       x.members.map(async (y) => {
         const user = await Tags.findOne({
-          where: { name: y.user.username },
+          where: { id: y.user.id },
         });
 
-        timers[y.user.username] = setTimeout(function () {
+        timers[y.user.id] = setTimeout(function () {
           console.log("start");
-          intervals[y.user.username] = setInterval(function () {
+          intervals[y.user.id] = setInterval(function () {
             if (user) {
               user.increment("time_rank");
             }
           }, millisPerHour);
         }, millisToTheHour);
-      
       });
     }
   });
@@ -80,15 +88,15 @@ client.on("voiceStateUpdate", async (oldMember, newMember) => {
     // User join a voice channel
 
     const user = await Tags.findOne({
-      where: { name: newMember.user.username },
+      where: { id: newMember.user.id },
     });
 
     if (newUserChannel.type === "voice") {
       const user = await Tags.findOne({
-        where: { name: newMember.user.username },
+        where: { id: newMember.user.id },
       });
-      timers[newMember.user.username] = setTimeout(() => {
-        intervals[newMember.user.username] = setInterval(() => {
+      timers[newMember.user.id] = setTimeout(() => {
+        intervals[newMember.user.id] = setInterval(() => {
           if (user) {
             user.increment("time_rank");
           }
@@ -99,10 +107,10 @@ client.on("voiceStateUpdate", async (oldMember, newMember) => {
   } else if (newUserChannel === undefined) {
     // User leaves a voice channel
 
-    if (timers[newMember.user.username] && intervals[newMember.user.username]) {
+    if (timers[newMember.user.id] && intervals[newMember.user.id]) {
       console.log("exit");
-      clearTimeout(timers[newMember.user.username]);
-      clearInterval(intervals[newMember.user.username]);
+      clearTimeout(timers[newMember.user.id]);
+      clearInterval(intervals[newMember.user.id]);
     }
   }
 });
@@ -111,9 +119,11 @@ client.on("message", async (message) => {
   const input = message.content;
   const command = input.charAt(0) === prefix ? input.substr(1) : input;
   const user = await Tags.findOne({
-    where: { name: message.author.username },
+    where: { id: message.author.id },
   });
 
+  // console.log("MMMM", message.member.guild.name);
+  // console.log("MMMM", message.author.id);
   if (message.author.bot) return;
 
   // user.get("messages_count")
@@ -159,14 +169,14 @@ client.on("message", async (message) => {
     } catch (e) {
       console.log("user do not exist");
       const user = await Tags.create({
-        name: message.author.username,
+        id: message.author.id,
         messages_count: 0,
         rank: 0,
       });
     }
   } else {
     const user = await Tags.create({
-      name: message.author.username,
+      id: message.author.id,
       messages_count: 0,
       rank: 0,
     });
@@ -176,7 +186,7 @@ client.on("message", async (message) => {
     if (command === "par") {
       try {
         const user = await Tags.create({
-          name: message.author.username,
+          id: message.author.id,
           messages_count: 0,
           rank: 0,
         });
@@ -207,7 +217,7 @@ client.on("message", async (message) => {
     } else if (command === "timereset") {
       const reset = await Tags.update(
         { time_rank: 0 },
-        { where: { name: message.author.username } }
+        { where: { id: message.author.id } }
       );
       if (reset > 0) {
         return message.channel.send("Your time-rank has been reset!");
@@ -215,7 +225,7 @@ client.on("message", async (message) => {
     } else if (command === "reset") {
       const reset = await Tags.update(
         { rank: 0, messages_count: 0 },
-        { where: { name: message.author.username } }
+        { where: { id: message.author.id } }
       );
 
       console.log(reset);
@@ -260,7 +270,7 @@ client.on("message", async (message) => {
 client.on("guildMemberAdd", async (member) => {
   const channel = member.guild.channels.find((ch) => ch.name === "general");
   const user = await Tags.findOne({
-    where: { name: member.user.username },
+    where: { id: member.user.id },
   });
 
   if (!channel) return;
