@@ -53,4 +53,4 @@ $ npm start
   
   - **Gianmarco Cavallo** (ladvace) - [Github Profile](https://github.com/Ladvace)
 
-### If you have any problems or question/features feel free to contact me! 🔧😃
+### If you have any problems or question feel free to contact me! 🔧😃
