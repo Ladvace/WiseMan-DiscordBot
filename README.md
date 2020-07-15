@@ -4,6 +4,7 @@
 </p>
 
 ## WiseMan - Discord Bot 🤖 
+[![forthebadge](https://forthebadge.com/images/badges/gluten-free.svg)](https://forthebadge.com) [![forthebadge](https://forthebadge.com/images/badges/made-with-crayons.svg)](https://forthebadge.com) [![forthebadge](https://forthebadge.com/images/badges/made-with-javascript.svg)](https://forthebadge.com) [![forthebadge](https://forthebadge.com/images/badges/built-with-love.svg)](https://forthebadge.com)
 
 This bot allow you to level up based on the time you spend in a vocal channel and how much you write in a text channel
 
