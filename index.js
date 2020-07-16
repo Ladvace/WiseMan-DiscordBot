@@ -17,6 +17,36 @@ const sequelize = new Sequelize("database", "user", "password", {
   storage: "database.sqlite",
 });
 
+const levelUp = (message, user, level, color) => {
+  if (user.get("rank") > 0) {
+    let role = message.guild.roles.find(
+      (role) => role.name === `Level ${level}`
+    );
+    if (!role) {
+      message.guild
+        .createRole({
+          name: user.get("rank") < 250 ? `Level ${level}` : `Level 250+`,
+          color: color,
+        })
+        .then(console.log)
+        .catch(console.error);
+    }
+
+    // > <@!163300027618295808>
+    // let member = `<@!${message.user.id}>`;
+    // let member = message.members;
+
+    // console.log("member", member);
+
+    message
+      .addRole(role)
+      .then((x) => {
+        return true;
+      })
+      .catch(console.error);
+  }
+};
+
 const Tags = sequelize.define("leaderboard", {
   // serverName: {
   //   type: Sequelize.STRING,
@@ -66,8 +96,15 @@ client.once("ready", async () => {
         timers[y.user.id] = setTimeout(function () {
           console.log("start");
           intervals[y.user.id] = setInterval(function () {
+            // console.log("p", y);
             if (user) {
-              user.increment("time_rank");
+              const isLevelUp = levelUp(y, user, user.get("rank"));
+              if (isLevelUp) {
+                message.channel.send(
+                  `${y.user.name} has been levelled up to ${user.get("rank")}`
+                );
+              }
+              user.increment("rank");
             }
           }, millisPerHour);
         }, millisToTheHour);
@@ -97,8 +134,9 @@ client.on("voiceStateUpdate", async (oldMember, newMember) => {
       });
       timers[newMember.user.id] = setTimeout(() => {
         intervals[newMember.user.id] = setInterval(() => {
+          console.log("x");
           if (user) {
-            user.increment("time_rank");
+            user.increment("rank");
           }
         }, millisPerHour);
       }, millisToTheHour);
@@ -117,11 +155,15 @@ client.on("voiceStateUpdate", async (oldMember, newMember) => {
 
 client.on("message", async (message) => {
   const input = message.content;
-  const command = input.charAt(0) === prefix ? input.substr(1) : input;
+  const args = input.split(" ").slice(1, input.split(" ").length);
+  const command =
+    input.charAt(0) === prefix ? input.substr(1).split(" ")[0] : input;
+  console.log("EE", message.mentions.members.first());
   const user = await Tags.findOne({
     where: { id: message.author.id },
   });
 
+  // console.log("MMMM", message.guild.roles);
   // console.log("MMMM", message.member.guild.name);
   // console.log("MMMM", message.author.id);
   if (message.author.bot) return;
@@ -133,37 +175,49 @@ client.on("message", async (message) => {
       console.log(
         "message",
         message.content,
-        command,
-        user.get("messages_count"),
-        user.get("rank")
+        command
+        // user.get("messages_count"),
+        // user.get("rank")
       );
       user.increment("messages_count");
-      if (user.get("messages_count") == 25) {
+      if (user.get("messages_count") === 25) {
         user.increment("rank");
-
-        return message.channel.send(`${message.author.username} reached lv 1`);
-      } else if (user.get("messages_count") == 50) {
-        user.increment("rank");
+        levelUp(message, user, user.get("rank"));
         return message.channel.send(
-          `${message.author.username} reached lv ${user.get("rank")}`
+          `**${message.author.username}** reached lv 1`
         );
-      } else if (user.get("messages_count") == 100) {
+      } else if (user.get("messages_count") === 50) {
         user.increment("rank");
-
+        levelUp(message, user, user.get("rank"));
         return message.channel.send(
-          `${message.author.username} reached lv ${user.get("rank")}`
+          `**${message.author.username}** reached lv ${user.get("rank")}`
         );
-      } else if (user.get("messages_count") == 150) {
+      } else if (user.get("messages_count") === 100) {
         user.increment("rank");
-
+        levelUp(message, user, user.get("rank"));
         return message.channel.send(
-          `${message.author.username} reached lv ${user.get("rank")}`
+          `**${message.author.username}** reached lv ${user.get("rank")}`
         );
-      } else if (user.get("messages_count") == 200) {
+      } else if (user.get("messages_count") === 150) {
         user.increment("rank");
-
+        levelUp(message, user, user.get("rank"));
         return message.channel.send(
-          `${message.author.username} ranked resetted!`
+          `**${message.author.username}** reached lv ${user.get("rank")}`
+        );
+      } else if (user.get("messages_count") === 200) {
+        user.increment("rank");
+        levelUp(message, user, user.get("rank"));
+        return message.channel.send(
+          `**${message.author.username}** reached lv ${user.get("rank")}`
+        );
+      } else if (
+        user.get("messages_count") > 200 &&
+        user.get("messages_count") % 100 === 0
+      ) {
+        user.increment("rank");
+        levelUp(message, user, user.get("rank"));
+        return message.channel.send(
+          `**${message.author.username}** reached lv ${user.get("rank")}`
         );
       }
     } catch (e) {
@@ -183,7 +237,7 @@ client.on("message", async (message) => {
   }
 
   if (message.content.charAt(0) === prefix) {
-    if (command === "par") {
+    if (command === "partecipate") {
       try {
         const user = await Tags.create({
           id: message.author.id,
@@ -203,6 +257,7 @@ client.on("message", async (message) => {
       }
     } else if (command === "rank") {
       if (user) {
+        console.log("fr");
         let embed = new Discord.RichEmbed()
           .setAuthor(message.author.username)
           .setColor("#008140")
@@ -214,14 +269,50 @@ client.on("message", async (message) => {
       return message.reply(`Could not find your rank`);
     } else if (command === "propic") {
       message.channel.send(message.author.avatarURL);
-    } else if (command === "timereset") {
-      const reset = await Tags.update(
-        { time_rank: 0 },
-        { where: { id: message.author.id } }
-      );
-      if (reset > 0) {
-        return message.channel.send("Your time-rank has been reset!");
-      }
+    } else if (command === "help") {
+      let embed = new Discord.RichEmbed()
+        .setTitle("Commands")
+        .setThumbnail("https://i.imgur.com/AtmK18i.png")
+        .setColor("#8966FF")
+        .addField("!rank", "It shows you the  rank");
+      // .addField("!trank", "It shows you the time-based rank")
+      // .addField("!reset", "reset the text-based rank")
+      // .addField("!timereset", "reset the time-based rank");
+      // .addField("!wima", "It shows your profile image");
+
+      return message.channel.send(embed);
+    } else if (command === "github") {
+      let embed = new Discord.RichEmbed()
+        .setTitle("GitHub")
+        .setColor("#8966FF")
+        .setURL("https://github.com/Ladvace/DiscordBot")
+        .setThumbnail("https://i.imgur.com/AtmK18i.png", "")
+        .setDescription(
+          "This is my repository! You can check out more about the wiseman-bot"
+        );
+
+      return message.channel.send(embed);
+    } else if (command === "createRole") {
+      console.log("WHY");
+      message.guild
+        .createRole({
+          name: args[0],
+          color: args[1],
+        })
+        .then(console.log, message.channel.send(`${args[0]} role Created!`))
+        .catch(console.error, `ther was a problem when creating your role!`);
+    } else if (command === "assignRole") {
+      let role = message.guild.roles.find((role) => role.name === args[0]);
+      let member = message.mentions.members.first();
+
+      member
+        .addRole(role)
+        .then(
+          message.channel.send(
+            `**${args[0]}** role assigned to **${member.user.username}**`
+          )
+        )
+        .catch(console.error);
     } else if (command === "reset") {
       const reset = await Tags.update(
         { rank: 0, messages_count: 0 },
@@ -232,37 +323,6 @@ client.on("message", async (message) => {
       return message.channel.send("Your text-rank has been reset!");
       // if (reset > 0) {
       // }
-    } else if (command === "trank") {
-      if (user) {
-        let embed = new Discord.RichEmbed()
-          .setAuthor(message.author.username)
-          .setThumbnail(message.author.avatarURL)
-          .setColor("#008140")
-          .addField("Time-Rank", user.get("time_rank"));
-        return message.channel.send(embed);
-      }
-    } else if (command === "help") {
-      let embed = new Discord.RichEmbed()
-        .setTitle("Commands")
-        .setThumbnail("https://i.imgur.com/1MrC4yt.png")
-        .setColor("#aa1e32")
-        .addField("!rank", "It shows you the text-based rank")
-        .addField("!trank", "It shows you the time-based rank")
-        .addField("!reset", "reset the text-based rank")
-        .addField("!timereset", "reset the time-based rank")
-        .addField("!wima", "It shows your profile image")
-        .addField("!wima", "It shows your profile image");
-
-      return message.channel.send(embed);
-    } else if (command === "github") {
-      let embed = new Discord.RichEmbed()
-        .setTitle("GitHub")
-        .setColor("#aa1e32")
-        .setURL("https://github.com/Ladvace/DiscordBot")
-        .setThumbnail("https://i.imgur.com/1MrC4yt.png", "")
-        .setDescription("This is my repository!");
-
-      return message.channel.send(embed);
     }
   }
 });
@@ -276,7 +336,7 @@ client.on("guildMemberAdd", async (member) => {
   if (!channel) return;
 
   channel.send(
-    `Welcome to the server, ${member}, you can partecipate to the leaderboard using the command !par`
+    `Welcome to the server, ${member}, you can partecipatetecipate to the leaderboard using the command !partecipate`
   );
 });
 

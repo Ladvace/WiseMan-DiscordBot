@@ -10,7 +10,7 @@ This bot allow you to level up based on the time you spend in a vocal channel an
 
 ## Commands 🎨
  You need to add the prefix `!` before the command e.g: `!rank`.
- - **par** - It adds you to the leaderboard (allow you to rank).
+ - **partecipate** - It adds you to the leaderboard (allow you to rank).
  - **trank** - It shows you your time-based score.
  - **rank** - It shows you your text-based score.
  - **wima** - It shows you your profile image.
