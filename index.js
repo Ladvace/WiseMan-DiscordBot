@@ -4,7 +4,7 @@ const env = require("dotenv").config();
 const client = new Discord.Client();
 const Sequelize = require("sequelize");
 
-let millisPerHour = 60 * minutes * 1000; //1hour
+let millisPerHour = 60 * minutes * 1000; //h
 let millisPastTheHour = Date.now() % millisPerHour;
 let millisToTheHour = millisPerHour - millisPastTheHour;
 
@@ -12,13 +12,11 @@ const sequelize = new Sequelize("database", "user", "password", {
   host: "localhost",
   dialect: "sqlite",
   logging: false,
-  // operatorsAliases: false,
-  // SQLite only
   storage: "database.sqlite",
 });
 
 const levelUp = (message, user, level, color) => {
-  if (user.get("rank") > 0) {
+  if (user.get("rank") > 0 && user.get("rank") % 10 === 0) {
     let role = message.guild.roles.find(
       (role) => role.name === `Level ${level}`
     );
@@ -32,34 +30,26 @@ const levelUp = (message, user, level, color) => {
         .catch(console.error);
     }
 
-    // > <@!163300027618295808>
-    // let member = `<@!${message.user.id}>`;
-    // let member = message.members;
-
     // console.log("member", member);
-
+    // if (!user.roles.has(role.id)) {
+    // console.log("a", role);
     message
       .addRole(role)
       .then((x) => {
         return true;
       })
       .catch(console.error);
+    // }
   }
 };
 
 const Tags = sequelize.define("leaderboard", {
-  // serverName: {
-  //   type: Sequelize.STRING,
-  //   unique: true,
-  //   defaultValue: null,
-  //   allowNull: false,
-  // },
   id: {
     type: Sequelize.STRING,
     unique: true,
     primaryKey: true,
     defaultValue: null,
-    allowNull: false,
+    allowNull: true,
   },
   messages_count: {
     type: Sequelize.INTEGER,
@@ -68,19 +58,34 @@ const Tags = sequelize.define("leaderboard", {
   },
   rank: {
     type: Sequelize.INTEGER,
-
     defaultValue: 1,
-    allowNull: false,
-  },
-  time_rank: {
-    type: Sequelize.INTEGER,
-    defaultValue: 0,
     allowNull: false,
   },
 });
 
 let timers = {};
 let intervals = {};
+
+async function interval(ms) {
+  // return await for better async stack trace support in case of errors.
+  return await new Promise((resolve) => setInterval(resolve, ms));
+}
+
+const taskResolution = (func, period) => {
+  return new Promise((resolve, reject) => {
+    const interval = setInterval(() => {
+      func().then((data) => {
+        if (data === "failure") {
+          clearInterval(interval);
+          reject(Error("fail"));
+        } else if (data === "success") {
+          resolve("complete");
+        }
+        // keep on waiting
+      });
+    }, period);
+  });
+};
 
 client.once("ready", async () => {
   console.log("Ready!");
@@ -89,22 +94,55 @@ client.once("ready", async () => {
   client.channels.map((x) => {
     if (x.type === "voice") {
       x.members.map(async (y) => {
+        try {
+          const addUser = await Tags.create({
+            id: `${y.user.id}#${x.guild.name}`,
+            messages_count: 0,
+            rank: 0,
+          });
+        } catch (e) {}
         const user = await Tags.findOne({
-          where: { id: y.user.id },
+          where: { id: `${y.user.id}#${x.guild.name}` },
         });
+        // timers[y.user.id] = 1;
+        // setInterval(function () {
+        // user.increment("rank", { by: 1 });
+        // timers[x.guild.name][y.user.id] = 1;
+        // user.increment("rank");
+        console.log(
+          "TES",
+          user.get("rank"),
+          x.guild.name,
+          `${y.user.id}#${x.guild.name}`
+        );
+        // }, 10000);
+        timers[x.guild.name] = {};
+        intervals[x.guild.name] = {};
 
-        timers[y.user.id] = setTimeout(function () {
+        timers[x.guild.name][y.user.id] = setTimeout(async () => {
           console.log("start");
-          intervals[y.user.id] = setInterval(function () {
-            // console.log("p", y);
+          intervals[x.guild.name][y.user.id] = setInterval(async () => {
             if (user) {
+              console.log("PPP");
+              // test();
+
+              setTimeout(() => {
+                console.log("BB", user.get("rank"));
+              }, 4000);
+
               const isLevelUp = levelUp(y, user, user.get("rank"));
               if (isLevelUp) {
                 message.channel.send(
                   `${y.user.name} has been levelled up to ${user.get("rank")}`
                 );
               }
-              user.increment("rank");
+              await user.increment("rank");
+            } else {
+              const addUser = await Tags.create({
+                id: `${y.user.id}#${x.guild.name}`,
+                messages_count: 0,
+                rank: 0,
+              });
             }
           }, millisPerHour);
         }, millisToTheHour);
@@ -113,9 +151,14 @@ client.once("ready", async () => {
   });
 });
 
-// client.on("message", async message => {
-
-// });
+// setInterval(async () => {
+//   const user = await Tags.findOne({
+//     where: { id: "163300027618295808#TEST" },
+//   });
+//   if (user) {
+//     console.log("GG", user.get("rank"));
+//   }
+// }, millisPerHour);
 
 client.on("voiceStateUpdate", async (oldMember, newMember) => {
   let newUserChannel = newMember.voiceChannel;
@@ -125,16 +168,21 @@ client.on("voiceStateUpdate", async (oldMember, newMember) => {
     // User join a voice channel
 
     const user = await Tags.findOne({
-      where: { id: newMember.user.id },
+      where: { id: `${newMember.user.id}#${newMember.guild.name}` },
     });
 
     if (newUserChannel.type === "voice") {
       const user = await Tags.findOne({
-        where: { id: newMember.user.id },
+        where: { id: `${newMember.user.id}#${newMember.guild.name}` },
       });
-      timers[newMember.user.id] = setTimeout(() => {
-        intervals[newMember.user.id] = setInterval(() => {
-          console.log("x");
+      console.log("EE", newMember.guild.name, newMember.user.id);
+
+      timers[newMember.guild.name] = {};
+      intervals[newMember.guild.name] = {};
+
+      timers[newMember.guild.name][newMember.user.id] = setTimeout(() => {
+        intervals[newMember.guild.name][newMember.user.id] = setInterval(() => {
+          console.log("CC", user.get("rank"));
           if (user) {
             user.increment("rank");
           }
@@ -145,10 +193,13 @@ client.on("voiceStateUpdate", async (oldMember, newMember) => {
   } else if (newUserChannel === undefined) {
     // User leaves a voice channel
 
-    if (timers[newMember.user.id] && intervals[newMember.user.id]) {
+    if (
+      timers[newMember.guild.name][newMember.user.id] &&
+      intervals[newMember.guild.name][newMember.user.id]
+    ) {
       console.log("exit");
-      clearTimeout(timers[newMember.user.id]);
-      clearInterval(intervals[newMember.user.id]);
+      clearTimeout(timers[oldMember.guild.name][newMember.user.id]);
+      clearInterval(intervals[oldMember.guild.name][newMember.user.id]);
     }
   }
 });
@@ -158,27 +209,16 @@ client.on("message", async (message) => {
   const args = input.split(" ").slice(1, input.split(" ").length);
   const command =
     input.charAt(0) === prefix ? input.substr(1).split(" ")[0] : input;
-  console.log("EE", message.mentions.members.first());
   const user = await Tags.findOne({
-    where: { id: message.author.id },
+    where: { id: `${message.author.id}#${message.guild.name}` },
   });
 
-  // console.log("MMMM", message.guild.roles);
-  // console.log("MMMM", message.member.guild.name);
-  // console.log("MMMM", message.author.id);
-  if (message.author.bot) return;
+  console.log("MMMM", message.guild.name);
 
-  // user.get("messages_count")
+  if (message.author.bot) return;
 
   if (user) {
     try {
-      console.log(
-        "message",
-        message.content,
-        command
-        // user.get("messages_count"),
-        // user.get("rank")
-      );
       user.increment("messages_count");
       if (user.get("messages_count") === 25) {
         user.increment("rank");
@@ -223,24 +263,25 @@ client.on("message", async (message) => {
     } catch (e) {
       console.log("user do not exist");
       const user = await Tags.create({
-        id: message.author.id,
+        id: `${message.author.id}#${message.guild.name}`,
         messages_count: 0,
         rank: 0,
       });
     }
   } else {
+    console.log("TTESTGH", message.guild.name);
     const user = await Tags.create({
-      id: message.author.id,
+      id: `${message.author.id}#${message.guild.name}`,
       messages_count: 0,
       rank: 0,
     });
   }
 
   if (message.content.charAt(0) === prefix) {
-    if (command === "partecipate") {
+    if (command === "participate") {
       try {
         const user = await Tags.create({
-          id: message.author.id,
+          id: `${message.author.id}#${message.guild.name}`,
           messages_count: 0,
           rank: 0,
         });
@@ -257,7 +298,7 @@ client.on("message", async (message) => {
       }
     } else if (command === "rank") {
       if (user) {
-        console.log("fr");
+        console.log("userR", user.get("rank"));
         let embed = new Discord.RichEmbed()
           .setAuthor(message.author.username)
           .setColor("#008140")
@@ -265,6 +306,12 @@ client.on("message", async (message) => {
           .addField("Rank", user.get("rank"));
         return message.channel.send(embed);
         // return message.channel.send(`your rank is ${user.get("rank")}`);
+      } else {
+        await Tags.create({
+          id: `${message.author.id}#${message.guild.name}`,
+          messages_count: 0,
+          rank: 0,
+        });
       }
       return message.reply(`Could not find your rank`);
     } else if (command === "propic") {
@@ -293,14 +340,19 @@ client.on("message", async (message) => {
 
       return message.channel.send(embed);
     } else if (command === "createRole") {
-      console.log("WHY");
-      message.guild
-        .createRole({
-          name: args[0],
-          color: args[1],
-        })
-        .then(console.log, message.channel.send(`${args[0]} role Created!`))
-        .catch(console.error, `ther was a problem when creating your role!`);
+      const perms = message.member.permissions;
+
+      // Check if a member has a specific permission on the guild!
+      const canManageRoles = perms.has("MANAGE_ROLES_OR_PERMISSIONS");
+      if (canManageRoles) {
+        message.guild
+          .createRole({
+            name: args[0],
+            color: args[1],
+          })
+          .then(console.log, message.channel.send(`${args[0]} role Created!`))
+          .catch(console.error, `ther was a problem when creating your role!`);
+      }
     } else if (command === "assignRole") {
       let role = message.guild.roles.find((role) => role.name === args[0]);
       let member = message.mentions.members.first();
@@ -316,7 +368,7 @@ client.on("message", async (message) => {
     } else if (command === "reset") {
       const reset = await Tags.update(
         { rank: 0, messages_count: 0 },
-        { where: { id: message.author.id } }
+        { where: { id: `${message.author.id}#${message.guild.name}` } }
       );
 
       console.log(reset);
@@ -330,13 +382,13 @@ client.on("message", async (message) => {
 client.on("guildMemberAdd", async (member) => {
   const channel = member.guild.channels.find((ch) => ch.name === "general");
   const user = await Tags.findOne({
-    where: { id: member.user.id },
+    where: { id: `${member.user.id}#${member.guild.name}` },
   });
 
   if (!channel) return;
 
   channel.send(
-    `Welcome to the server, ${member}, you can partecipatetecipate to the leaderboard using the command !partecipate`
+    `Welcome to the server, ${member}, you can partecipatetecipate to the leaderboard using the command !participate`
   );
 });
 
