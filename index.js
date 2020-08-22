@@ -15,11 +15,19 @@ const sequelize = new Sequelize("database", "user", "password", {
   storage: "database.sqlite",
 });
 
-const levelUp = (message, user, level, color) => {
+const levelUp = async (message, user, level, color) => {
   if (user.get("rank") > 0 && user.get("rank") % 10 === 0) {
+    let Oldrole = message.guild.roles.find(
+      (role) => role.name === `Level ${level - 10}`
+    );
     let role = message.guild.roles.find(
       (role) => role.name === `Level ${level}`
     );
+
+    if (Oldrole) {
+      message.removeRole(Oldrole);
+    }
+
     if (!role) {
       message.guild
         .createRole({
@@ -28,18 +36,13 @@ const levelUp = (message, user, level, color) => {
         })
         .then(console.log)
         .catch(console.error);
-    }
-
-    // console.log("member", member);
-    // if (!user.roles.has(role.id)) {
-    // console.log("a", role);
-    message
-      .addRole(role)
-      .then((x) => {
-        return true;
-      })
-      .catch(console.error);
-    // }
+    } else
+      message
+        .addRole(role)
+        .then((x) => {
+          return true;
+        })
+        .catch(console.error);
   }
 };
 
@@ -66,28 +69,7 @@ const Tags = sequelize.define("leaderboard", {
 let timers = {};
 let intervals = {};
 
-async function interval(ms) {
-  // return await for better async stack trace support in case of errors.
-  return await new Promise((resolve) => setInterval(resolve, ms));
-}
-
-const taskResolution = (func, period) => {
-  return new Promise((resolve, reject) => {
-    const interval = setInterval(() => {
-      func().then((data) => {
-        if (data === "failure") {
-          clearInterval(interval);
-          reject(Error("fail"));
-        } else if (data === "success") {
-          resolve("complete");
-        }
-        // keep on waiting
-      });
-    }, period);
-  });
-};
-
-client.once("ready", async () => {
+client.once("ready", async (z) => {
   console.log("Ready!");
   Tags.sync();
 
@@ -95,7 +77,7 @@ client.once("ready", async () => {
     if (x.type === "voice") {
       x.members.map(async (y) => {
         try {
-          const addUser = await Tags.create({
+          await Tags.create({
             id: `${y.user.id}#${x.guild.name}`,
             messages_count: 0,
             rank: 0,
@@ -104,18 +86,7 @@ client.once("ready", async () => {
         const user = await Tags.findOne({
           where: { id: `${y.user.id}#${x.guild.name}` },
         });
-        // timers[y.user.id] = 1;
-        // setInterval(function () {
-        // user.increment("rank", { by: 1 });
-        // timers[x.guild.name][y.user.id] = 1;
-        // user.increment("rank");
-        console.log(
-          "TES",
-          user.get("rank"),
-          x.guild.name,
-          `${y.user.id}#${x.guild.name}`
-        );
-        // }, 10000);
+
         timers[x.guild.name] = {};
         intervals[x.guild.name] = {};
 
@@ -123,22 +94,32 @@ client.once("ready", async () => {
           console.log("start");
           intervals[x.guild.name][y.user.id] = setInterval(async () => {
             if (user) {
-              console.log("PPP");
-              // test();
+              let ch = client.channels.get("691542704093528128");
+              // let channel = client.channels.get(
+              //   (c) => c.name === "Generale"
+              // );
+              console.log("PPP", z, ch);
+              // ch.send("TT");
+              await user.increment("rank");
 
-              setTimeout(() => {
-                console.log("BB", user.get("rank"));
-              }, 4000);
+              const user1 = await Tags.findOne({
+                where: { id: `${y.user.id}#${x.guild.name}` },
+              });
 
-              const isLevelUp = levelUp(y, user, user.get("rank"));
+              const isLevelUp = await levelUp(
+                y,
+                user1,
+                user1.getDataValue("rank")
+              );
+
               if (isLevelUp) {
-                message.channel.send(
+                console.log("levelUp");
+                channel.send(
                   `${y.user.name} has been levelled up to ${user.get("rank")}`
                 );
               }
-              await user.increment("rank");
             } else {
-              const addUser = await Tags.create({
+              await Tags.create({
                 id: `${y.user.id}#${x.guild.name}`,
                 messages_count: 0,
                 rank: 0,
@@ -151,44 +132,38 @@ client.once("ready", async () => {
   });
 });
 
-// setInterval(async () => {
-//   const user = await Tags.findOne({
-//     where: { id: "163300027618295808#TEST" },
-//   });
-//   if (user) {
-//     console.log("GG", user.get("rank"));
-//   }
-// }, millisPerHour);
-
 client.on("voiceStateUpdate", async (oldMember, newMember) => {
   let newUserChannel = newMember.voiceChannel;
   let oldUserChannel = oldMember.voiceChannel;
 
   if (oldUserChannel === undefined && newUserChannel !== undefined) {
     // User join a voice channel
-
-    const user = await Tags.findOne({
-      where: { id: `${newMember.user.id}#${newMember.guild.name}` },
-    });
-
     if (newUserChannel.type === "voice") {
       const user = await Tags.findOne({
         where: { id: `${newMember.user.id}#${newMember.guild.name}` },
       });
-      console.log("EE", newMember.guild.name, newMember.user.id);
 
       timers[newMember.guild.name] = {};
       intervals[newMember.guild.name] = {};
 
       timers[newMember.guild.name][newMember.user.id] = setTimeout(() => {
-        intervals[newMember.guild.name][newMember.user.id] = setInterval(() => {
-          console.log("CC", user.get("rank"));
-          if (user) {
-            user.increment("rank");
-          }
-        }, millisPerHour);
+        intervals[newMember.guild.name][newMember.user.id] = setInterval(
+          async () => {
+            if (user) {
+              user.increment("rank");
+              const user1 = await Tags.findOne({
+                where: { id: `${newMember.user.id}#${newMember.guild.name}` },
+              });
+              const isLevelUp = await levelUp(
+                newMember,
+                user1,
+                user1.getDataValue("rank")
+              );
+            }
+          },
+          millisPerHour
+        );
       }, millisToTheHour);
-      // timers[newMember.user.username];
     }
   } else if (newUserChannel === undefined) {
     // User leaves a voice channel
@@ -212,9 +187,6 @@ client.on("message", async (message) => {
   const user = await Tags.findOne({
     where: { id: `${message.author.id}#${message.guild.name}` },
   });
-
-  console.log("MMMM", message.guild.name);
-
   if (message.author.bot) return;
 
   if (user) {
@@ -222,31 +194,31 @@ client.on("message", async (message) => {
       user.increment("messages_count");
       if (user.get("messages_count") === 25) {
         user.increment("rank");
-        levelUp(message, user, user.get("rank"));
+        await levelUp(message, user, user.get("rank"));
         return message.channel.send(
           `**${message.author.username}** reached lv 1`
         );
       } else if (user.get("messages_count") === 50) {
         user.increment("rank");
-        levelUp(message, user, user.get("rank"));
+        await levelUp(message, user, user.get("rank"));
         return message.channel.send(
           `**${message.author.username}** reached lv ${user.get("rank")}`
         );
       } else if (user.get("messages_count") === 100) {
         user.increment("rank");
-        levelUp(message, user, user.get("rank"));
+        await levelUp(message, user, user.get("rank"));
         return message.channel.send(
           `**${message.author.username}** reached lv ${user.get("rank")}`
         );
       } else if (user.get("messages_count") === 150) {
         user.increment("rank");
-        levelUp(message, user, user.get("rank"));
+        await levelUp(message, user, user.get("rank"));
         return message.channel.send(
           `**${message.author.username}** reached lv ${user.get("rank")}`
         );
       } else if (user.get("messages_count") === 200) {
         user.increment("rank");
-        levelUp(message, user, user.get("rank"));
+        await levelUp(message, user, user.get("rank"));
         return message.channel.send(
           `**${message.author.username}** reached lv ${user.get("rank")}`
         );
@@ -255,7 +227,7 @@ client.on("message", async (message) => {
         user.get("messages_count") % 100 === 0
       ) {
         user.increment("rank");
-        levelUp(message, user, user.get("rank"));
+        await levelUp(message, user, user.get("rank"));
         return message.channel.send(
           `**${message.author.username}** reached lv ${user.get("rank")}`
         );
@@ -269,7 +241,6 @@ client.on("message", async (message) => {
       });
     }
   } else {
-    console.log("TTESTGH", message.guild.name);
     const user = await Tags.create({
       id: `${message.author.id}#${message.guild.name}`,
       messages_count: 0,
@@ -298,7 +269,6 @@ client.on("message", async (message) => {
       }
     } else if (command === "rank") {
       if (user) {
-        console.log("userR", user.get("rank"));
         let embed = new Discord.RichEmbed()
           .setAuthor(message.author.username)
           .setColor("#008140")
@@ -371,10 +341,7 @@ client.on("message", async (message) => {
         { where: { id: `${message.author.id}#${message.guild.name}` } }
       );
 
-      console.log(reset);
       return message.channel.send("Your text-rank has been reset!");
-      // if (reset > 0) {
-      // }
     }
   }
 });
