@@ -16,33 +16,62 @@ const sequelize = new Sequelize("database", "user", "password", {
 });
 
 const levelUp = async (message, user, level, color) => {
+  //   (x) =>
+  //     // (x) => console.log("TEST", x.name, x.id)
+  //     x.name === "general"
+  // );
+  const ch = client.channels.get("749314643972849757");
+
   if (user.get("rank") > 0 && user.get("rank") % 10 === 0) {
-    let Oldrole = message.guild.roles.find(
+    const Oldrole = message.guild.roles.find(
       (role) => role.name === `Level ${level - 10}`
     );
-    let role = message.guild.roles.find(
-      (role) => role.name === `Level ${level}`
+
+    const role = message.guild.roles.find(
+      (role) =>
+        role.name === (user.get("rank") < 500 ? `Level ${level}` : `Level 500+`)
     );
 
-    if (Oldrole) {
-      message.removeRole(Oldrole);
-    }
+    console.log("RRROLE", ch.id);
+
+    let embed = new Discord.RichEmbed()
+      .setAuthor(message.user.username)
+      .setColor("#008140")
+      .setThumbnail(message.user.avatarURL)
+      .addField("Rank", `${level}`);
 
     if (!role) {
+      console.log("CreatingRole");
+
       message.guild
         .createRole({
-          name: user.get("rank") < 250 ? `Level ${level}` : `Level 250+`,
+          name: user.get("rank") < 500 ? `Level ${level}` : `Level 500+`,
           color: color,
         })
         .then(console.log)
         .catch(console.error);
-    } else
+
+      const newRole = message.guild.roles.find((role) =>
+        role.name === user.get("rank") < 500 ? `Level ${level}` : `Level 500+`
+      );
+
+      message
+        .addRole(newRole)
+        .then((x) => {
+          return ch.send(embed);
+        })
+        .catch(console.error);
+    } else {
+      if (Oldrole) {
+        message.removeRole(Oldrole);
+      }
       message
         .addRole(role)
         .then((x) => {
-          return true;
+          return ch.send(embed);
         })
         .catch(console.error);
+    }
   }
 };
 
@@ -76,34 +105,40 @@ client.once("ready", async (z) => {
   client.channels.map((x) => {
     if (x.type === "voice") {
       x.members.map(async (y) => {
+        const userExist = await Tags.findOne({
+          where: { id: `${y.user.id}#${x.guild.id}` },
+        });
+        console.log("ID", `${y.user.id}#${x.guild.id}`);
         try {
-          await Tags.create({
-            id: `${y.user.id}#${x.guild.name}`,
-            messages_count: 0,
-            rank: 0,
-          });
-        } catch (e) {}
+          if (!userExist) {
+            await Tags.create({
+              id: `${y.user.id}#${x.guild.id}`,
+              messages_count: 0,
+              rank: 0,
+            });
+          }
+        } catch (e) {
+          console.error(e);
+        }
         const user = await Tags.findOne({
-          where: { id: `${y.user.id}#${x.guild.name}` },
+          where: { id: `${y.user.id}#${x.guild.id}` },
         });
 
-        timers[x.guild.name] = {};
-        intervals[x.guild.name] = {};
+        timers[x.guild.id] = {};
+        intervals[x.guild.id] = {};
 
-        timers[x.guild.name][y.user.id] = setTimeout(async () => {
+        timers[x.guild.id][y.user.id] = setTimeout(async () => {
           console.log("start");
-          intervals[x.guild.name][y.user.id] = setInterval(async () => {
+          intervals[x.guild.id][y.user.id] = setInterval(async () => {
             if (user) {
-              let ch = client.channels.get("691542704093528128");
-              // let channel = client.channels.get(
-              //   (c) => c.name === "Generale"
-              // );
-              console.log("PPP", z, ch);
+              // let ch = client.channels.get("691542704093528128");
+              // let ch = client.channels.get((c) => c.name === "General");
+              console.log("PPP");
               // ch.send("TT");
               await user.increment("rank");
 
               const user1 = await Tags.findOne({
-                where: { id: `${y.user.id}#${x.guild.name}` },
+                where: { id: `${y.user.id}#${x.guild.id}` },
               });
 
               const isLevelUp = await levelUp(
@@ -112,18 +147,22 @@ client.once("ready", async (z) => {
                 user1.getDataValue("rank")
               );
 
-              if (isLevelUp) {
-                console.log("levelUp");
-                channel.send(
-                  `${y.user.name} has been levelled up to ${user.get("rank")}`
-                );
-              }
+              // if (isLevelUp) {
+              //   console.log("levelUp");
+              //   ch.send(
+              //     `${y.user.name} has been levelled up to ${user.get("rank")}`
+              //   );
+              // }
             } else {
-              await Tags.create({
-                id: `${y.user.id}#${x.guild.name}`,
-                messages_count: 0,
-                rank: 0,
-              });
+              try {
+                await Tags.create({
+                  id: `${y.user.id}#${x.guild.id}`,
+                  messages_count: 0,
+                  rank: 0,
+                });
+              } catch (e) {
+                console.error(e);
+              }
             }
           }, millisPerHour);
         }, millisToTheHour);
@@ -140,25 +179,21 @@ client.on("voiceStateUpdate", async (oldMember, newMember) => {
     // User join a voice channel
     if (newUserChannel.type === "voice") {
       const user = await Tags.findOne({
-        where: { id: `${newMember.user.id}#${newMember.guild.name}` },
+        where: { id: `${newMember.user.id}#${newMember.guild.id}` },
       });
 
-      timers[newMember.guild.name] = {};
-      intervals[newMember.guild.name] = {};
+      timers[newMember.guild.id] = {};
+      intervals[newMember.guild.id] = {};
 
-      timers[newMember.guild.name][newMember.user.id] = setTimeout(() => {
-        intervals[newMember.guild.name][newMember.user.id] = setInterval(
+      timers[newMember.guild.id][newMember.user.id] = setTimeout(() => {
+        intervals[newMember.guild.id][newMember.user.id] = setInterval(
           async () => {
             if (user) {
               user.increment("rank");
               const user1 = await Tags.findOne({
-                where: { id: `${newMember.user.id}#${newMember.guild.name}` },
+                where: { id: `${newMember.user.id}#${newMember.guild.id}` },
               });
-              const isLevelUp = await levelUp(
-                newMember,
-                user1,
-                user1.getDataValue("rank")
-              );
+              await levelUp(newMember, user1, user1.getDataValue("rank"));
             }
           },
           millisPerHour
@@ -169,12 +204,12 @@ client.on("voiceStateUpdate", async (oldMember, newMember) => {
     // User leaves a voice channel
 
     if (
-      timers[newMember.guild.name][newMember.user.id] &&
-      intervals[newMember.guild.name][newMember.user.id]
+      timers[newMember.guild.id][newMember.user.id] &&
+      intervals[newMember.guild.id][newMember.user.id]
     ) {
       console.log("exit");
-      clearTimeout(timers[oldMember.guild.name][newMember.user.id]);
-      clearInterval(intervals[oldMember.guild.name][newMember.user.id]);
+      clearTimeout(timers[oldMember.guild.id][newMember.user.id]);
+      clearInterval(intervals[oldMember.guild.id][newMember.user.id]);
     }
   }
 });
@@ -185,7 +220,7 @@ client.on("message", async (message) => {
   const command =
     input.charAt(0) === prefix ? input.substr(1).split(" ")[0] : input;
   const user = await Tags.findOne({
-    where: { id: `${message.author.id}#${message.guild.name}` },
+    where: { id: `${message.author.id}#${message.guild.id}` },
   });
   if (message.author.bot) return;
 
@@ -234,15 +269,15 @@ client.on("message", async (message) => {
       }
     } catch (e) {
       console.log("user do not exist");
-      const user = await Tags.create({
-        id: `${message.author.id}#${message.guild.name}`,
+      await Tags.create({
+        id: `${message.author.id}#${message.guild.id}`,
         messages_count: 0,
         rank: 0,
       });
     }
   } else {
-    const user = await Tags.create({
-      id: `${message.author.id}#${message.guild.name}`,
+    await Tags.create({
+      id: `${message.author.id}#${message.guild.id}`,
       messages_count: 0,
       rank: 0,
     });
@@ -252,7 +287,7 @@ client.on("message", async (message) => {
     if (command === "participate") {
       try {
         const user = await Tags.create({
-          id: `${message.author.id}#${message.guild.name}`,
+          id: `${message.author.id}#${message.guild.id}`,
           messages_count: 0,
           rank: 0,
         });
@@ -268,6 +303,8 @@ client.on("message", async (message) => {
         );
       }
     } else if (command === "rank") {
+      let ddd = message.guild.channels.cache;
+      console.log("T", ddd);
       if (user) {
         let embed = new Discord.RichEmbed()
           .setAuthor(message.author.username)
@@ -277,11 +314,15 @@ client.on("message", async (message) => {
         return message.channel.send(embed);
         // return message.channel.send(`your rank is ${user.get("rank")}`);
       } else {
-        await Tags.create({
-          id: `${message.author.id}#${message.guild.name}`,
-          messages_count: 0,
-          rank: 0,
-        });
+        try {
+          await Tags.create({
+            id: `${message.author.id}#${message.guild.id}`,
+            messages_count: 0,
+            rank: 0,
+          });
+        } catch (e) {
+          console.error(e);
+        }
       }
       return message.reply(`Could not find your rank`);
     } else if (command === "propic") {
@@ -336,12 +377,12 @@ client.on("message", async (message) => {
         )
         .catch(console.error);
     } else if (command === "reset") {
-      const reset = await Tags.update(
+      await Tags.update(
         { rank: 0, messages_count: 0 },
-        { where: { id: `${message.author.id}#${message.guild.name}` } }
+        { where: { id: `${message.author.id}#${message.guild.id}` } }
       );
 
-      return message.channel.send("Your text-rank has been reset!");
+      return message.channel.send("Your rank has been reset!");
     }
   }
 });
@@ -349,7 +390,7 @@ client.on("message", async (message) => {
 client.on("guildMemberAdd", async (member) => {
   const channel = member.guild.channels.find((ch) => ch.name === "general");
   const user = await Tags.findOne({
-    where: { id: `${member.user.id}#${member.guild.name}` },
+    where: { id: `${member.user.id}#${member.guild.id}` },
   });
 
   if (!channel) return;
