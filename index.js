@@ -1,11 +1,11 @@
 "use strict";
 const Discord = require("discord.js");
 const { prefix, minutes } = require("./config.json");
+// eslint-disable-next-line no-unused-vars
 const env = require("dotenv").config();
 const client = new Discord.Client();
-const Sequelize = require("sequelize");
 const mongoose = require("mongoose");
-const tmi = require("tmi.js");
+// const tmi = require("tmi.js");
 const { config, userSchema } = require("./mongodb");
 
 mongoose.connect(
@@ -136,7 +136,7 @@ const levelUp = async (message, guildId, user, level) => {
       if (notificationChannelID.guildNotificationChannelID) {
         message.roles
           .add(role)
-          .then((x) => {
+          .then(() => {
             return ch.send(embed);
           })
           .catch(console.error);
@@ -148,7 +148,7 @@ const levelUp = async (message, guildId, user, level) => {
       }
       message.roles
         .add(role)
-        .then((x) => {
+        .then(() => {
           console.log("ch", ch);
           return ch.send(embed);
         })
@@ -369,8 +369,8 @@ client.on("voiceStateUpdate", async (oldState, newState) => {
         clearTimeout(timers[oldState.id][newState.guild.id]);
         clearInterval(intervals[oldState.id][newState.guild.id]);
       }
-    } catch {
-      console.error;
+    } catch (e) {
+      console.error(e);
     }
   }
 });
@@ -446,7 +446,6 @@ client.on("message", async (message) => {
     if (command === "rank") {
       if (message.mentions.members.first()) {
         const member = message.mentions.members.first();
-
         const userMentioned = await userSchema.findOne(
           {
             id: `${member.user.id}#${message.guild.id}`,
@@ -667,7 +666,6 @@ client.on("message", async (message) => {
       const timeoutRegex = /--timeout\s+(\S+)/gi;
       const optionRegex = /--option\s+(\S+)/gi;
       const questionRegex = /--question\s+(\S+)/gi;
-      console.log("TTTT", input.match(optionRegex), input.match(questionRegex));
 
       if (!input.match(optionRegex) || !input.match(questionRegex))
         return message.channel.send("Command not Valid");
@@ -690,30 +688,9 @@ client.on("message", async (message) => {
           "You need to provide at least two options and a question in order to male a poll!"
         );
 
-      if (optionValues.length >= 10) return;
-      // const emoji = [
-      //   ":regional_indicator_a:",
-      //   ":regional_indicator_b:",
-      //   ":regional_indicator_c:",
-      //   ":regional_indicator_d:",
-      //   ":regional_indicator_e:",
-      //   ":regional_indicator_f:",
-      //   ":regional_indicator_g:",
-      //   ":regional_indicator_h:",
-      //   ":regional_indicator_i:",
-      //   ":regional_indicator_l:",
-      //   ":regional_indicator_m:",
-      //   ":regional_indicator_n:",
-      //   ":regional_indicator_o:",
-      //   ":regional_indicator_p:",
-      //   ":regional_indicator_q:",
-      //   ":regional_indicator_r:",
-      //   ":regional_indicator_s:",
-      //   ":regional_indicator_t:",
-      //   ":regional_indicator_u:",
-      //   ":regional_indicator_v:",
-      //   ":regional_indicator_z:",
-      // ];
+      if (optionValues.length >= 10)
+        return message.channel.send("You can enter a maximum of 10 option.");
+
       const emoji = [
         "0️⃣",
         "1️⃣",
@@ -739,7 +716,6 @@ client.on("message", async (message) => {
         return message.channel.send("Command not valid!");
       if (optionValues.length >= 10) return;
 
-      // value[0].replace(/\s\s+/g, " ").split(" ")[1];
       let embed = new Discord.MessageEmbed()
         .setTitle("Poll")
         .addField(question, "\u200B")
@@ -804,7 +780,7 @@ client.on("message", async (message) => {
           clearTimeout(polls[message.guild.id][dateTimeStamp].timer);
 
           let newEmbed = new Discord.MessageEmbed()
-            .setTitle("Poll")
+            .setTitle("Poll Ended")
             .addField(question, "\u200B")
             .setColor("#8966FF")
             .addField(
@@ -812,7 +788,7 @@ client.on("message", async (message) => {
               "\u200B"
             )
             .addFields(
-              ...Object.entries(pollAnswers).map((x, i) => {
+              ...Object.entries(pollAnswers).map((x) => {
                 return {
                   name: `${x[0]} :  ${poolSolution[x[0]] || 0}%`,
                   value: "\u200B",
@@ -825,22 +801,15 @@ client.on("message", async (message) => {
             .setFooter("Ends", null);
 
           embedMessage.edit(newEmbed);
-        }, 10000),
+        }, timeOut && 3600000),
       };
-      // }, timeOut && 3600000);
     }
   }
 });
 
-client.on("messageReactionAdd", async (reaction, user) => {
+client.on("messageReactionAdd", async (reaction) => {
   // When we receive a reaction we check if the reaction is partial or not
   pollAnswers[reaction.emoji.name] = reaction.count - 1;
-
-  const sumReducer = (accumulator, currentValue) => accumulator + currentValue;
-
-  setTimeout(() => {
-    const sum = Object.values(pollAnswers).reduce(sumReducer);
-  }, 10000);
 
   if (reaction.partial) {
     // If the message this reaction belongs to was removed the fetching might result in an API error, which we need to handle
