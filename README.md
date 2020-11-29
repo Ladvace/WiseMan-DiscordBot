@@ -13,10 +13,11 @@ This bot allows you to level up based on the time you spend in a vocal channel a
 You need to add the prefix `!` before the command e.g: `!rank`.
 
 - **rank** - It shows you your rank.
-- **wima** - It shows you your profile image.
-- **reset** - It reset the text-based score.
+- **propic** - It shows you your profile image.
 - **github** - It shows you the github repo link.
 - **help** - It shows you all the commands.
+- **poll** - It allows you to make a poll.
+- **setPrefix** - It allows you to set a new prefix for your server..
 
 ## Steps ▶️
 

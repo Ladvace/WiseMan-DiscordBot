@@ -5,7 +5,7 @@ const { prefix, minutes } = require("./config.json");
 const env = require("dotenv").config();
 const client = new Discord.Client();
 const mongoose = require("mongoose");
-// const tmi = require("tmi.js");
+const tmi = require("tmi.js");
 const { config, userSchema } = require("./mongodb");
 
 mongoose.connect(
@@ -77,7 +77,6 @@ const incrementMessages = async (id, name) => {
 
 const levelUp = async (message, guildId, user, level) => {
   if (message.user.id === client.user.id) return;
-  // if (message.user.id === "589693244456042497") return;
 
   const notificationChannelID = await config.findOne(
     {
@@ -112,72 +111,74 @@ const levelUp = async (message, guildId, user, level) => {
 
     // const voiceChannel = message.user.member.voice.channel;
 
-    let embed = new Discord.MessageEmbed()
+    const embed = new Discord.MessageEmbed()
       .setAuthor(message.user.username)
       .setColor("#8966ff")
       .setThumbnail(message.user.avatarURL({ format: "png" }))
       .addField("Rank", `${level}`);
 
-    const ch = client.channels.cache.get(
-      notificationChannelID.guildNotificationChannelID
-    );
+    if (notificationChannelID.guildNotificationChannelID) {
+      const channell = client.channels.cache.get(
+        notificationChannelID.guildNotificationChannelID
+      );
 
-    if (!role) {
-      message.guild.roles
-        .create({
-          data: {
-            name: user.rank < 500 ? `Level ${level}` : `Level 500+`,
-            color: "#8966ff",
-          },
-        })
-        .then(console.log)
-        .catch(console.error);
+      if (!role) {
+        message.guild.roles
+          .create({
+            data: {
+              name: user.rank < 500 ? `Level ${level}` : `Level 500+`,
+              color: "#8966ff",
+            },
+          })
+          .then(console.log)
+          .catch(console.error);
 
-      if (notificationChannelID.guildNotificationChannelID) {
+        // if (notificationChannelID.guildNotificationChannelID) {
         message.roles
           .add(role)
           .then(() => {
-            return ch.send(embed);
+            return channell.send(embed);
+          })
+          .catch(console.error);
+        // }
+      } else {
+        console.log("existing role");
+        if (Oldrole) {
+          message.roles.remove(Oldrole);
+        }
+        message.roles
+          .add(role)
+          .then(() => {
+            console.log("ch", channell);
+            return channell.send(embed);
           })
           .catch(console.error);
       }
-    } else {
-      console.log("existing role");
-      if (Oldrole) {
-        message.roles.remove(Oldrole);
-      }
-      message.roles
-        .add(role)
-        .then(() => {
-          console.log("ch", ch);
-          return ch.send(embed);
-        })
-        .catch(console.error);
     }
   }
 };
 
-// const clientTmi = new tmi.Client({
-//   options: { debug: true },
-//   connection: {
-//     reconnect: true,
-//     secure: true,
-//   },
-//   identity: {
-//     username: "wiseManBot",
-//     password: process.env.TOKEN,
-//   },
-//   channels: ["my-channel"],
-// });
+const clientTmi = new tmi.Client({
+  options: { debug: true },
+  connection: {
+    reconnect: true,
+    secure: true,
+  },
+  identity: {
+    username: "wiseManBot",
+    password: process.env.TOKEN,
+  },
+  channels: [],
+});
 
-// clientTmi.connect().catch(console.error);
+clientTmi.connect().catch(console.error);
 
-// clientTmi.on("message", (channel, tags, message, self) => {
-//   if (self) return;
-//   if (message.toLowerCase() === "!hello") {
-//     clientTmi.say(channel, `@${tags.username}, heya!`);
-//   }
-// });
+clientTmi.on("message", (channel, tags, message, self) => {
+  if (self) return;
+  if (message.toLowerCase() === "!hello") {
+    clientTmi.say(channel, `@${tags.username}, heya!`);
+  }
+});
 
 let timers = {};
 let intervals = {};
@@ -401,6 +402,8 @@ client.on("message", async (message) => {
   const prefx =
     RemotePrefix?.guildPrefix !== prefix ? RemotePrefix?.guildPrefix : prefix;
 
+  console.log("command", prefix, input, args);
+
   const command =
     input.charAt(0) === prefx ? input.substr(1).split(" ")[0] : input;
 
@@ -467,7 +470,7 @@ client.on("message", async (message) => {
         );
 
         if (userMentioned) {
-          let embed = new Discord.MessageEmbed()
+          const embed = new Discord.MessageEmbed()
             .setAuthor(member.user.username)
             .setColor("#8966ff")
             .setThumbnail(member.user.avatarURL({ format: "png" }))
@@ -476,7 +479,7 @@ client.on("message", async (message) => {
         }
       } else {
         if (user) {
-          let embed = new Discord.MessageEmbed()
+          const embed = new Discord.MessageEmbed()
             .setAuthor(message.author.username)
             .setColor("#8966ff")
             .setThumbnail(message.author.avatarURL({ format: "png" }))
@@ -487,20 +490,79 @@ client.on("message", async (message) => {
     } else if (command === "propic") {
       message.channel.send(message.author.avatarURL({ format: "png" }));
     } else if (command === "help") {
-      let embed = new Discord.MessageEmbed()
+      const pollRegex = /--poll\s+(\S+)/gi;
+      const pollHelp = input.match(pollRegex);
+
+      const embed = new Discord.MessageEmbed();
+
+      if (pollHelp) {
+        embed
+          .setTitle("Poll")
+          .setThumbnail("https://i.imgur.com/AtmK18i.png")
+          .setColor("#8966FF")
+          .addField(
+            `\`\`\`${RemotePrefix.guildPrefix || prefix}poll\`\`\``,
+            "\u200B"
+          )
+          .addFields({
+            name: `Arguments`,
+            value: "\u200B",
+            inline: false,
+          })
+          .addField(
+            `\`\`\`--option\`\`\``,
+            "you must enter at least two option"
+          )
+          .addField(
+            `\`\`\`--question\`\`\``,
+            "you must enter at least one question"
+          )
+          .addField(
+            `\`\`\`--timeout\`\`\``,
+            "this is the time in hours the poll will last, the default value it's 1h"
+          )
+          .addField(
+            "Example:",
+            `\`\`\`${
+              RemotePrefix.guildPrefix || prefix
+            }poll --option option1 --option option2 --option option3 --question is this a question? --timeout 3\`\`\``
+          );
+
+        return message.channel.send(embed);
+      }
+
+      embed
         .setTitle("Commands")
         .setThumbnail("https://i.imgur.com/AtmK18i.png")
         .setColor("#8966FF")
-        .addField("!rank", "It shows you the  rank")
-        .addField("!gitHub", "It gives you the link of the github repo")
-        .addField("!reset", "reset the rank")
-        .addField("!help", `probably you already know that 😄`)
-        .addField("!propic", "It shows your profile image")
-        .addField("!setPrefix", "It allows you to set a new command prefix");
+        .addField(
+          `\`\`\`${RemotePrefix.guildPrefix || prefix}rank\`\`\``,
+          "It shows you the  rank"
+        )
+        .addField(
+          `\`\`\`${RemotePrefix.guildPrefix || prefix}github\`\`\``,
+          "It gives you the link of the github repo"
+        )
+        .addField(
+          ` \`\`\`${RemotePrefix.guildPrefix || prefix}help\`\`\``,
+          `probably you already know that 😄`
+        )
+        .addField(
+          `\`\`\`${RemotePrefix.guildPrefix || prefix}propic\`\`\``,
+          "It shows your profile image"
+        )
+        .addField(
+          `\`\`\`${RemotePrefix.guildPrefix || prefix}setPrefix\`\`\``,
+          "It allows you to set a new command prefix"
+        )
+        .addField(
+          `\`\`\`${RemotePrefix.guildPrefix || prefix}poll\`\`\``,
+          "It allows you to create a poll, use --poll to get more information"
+        );
 
       return message.channel.send(embed);
     } else if (command === "github") {
-      let embed = new Discord.MessageEmbed()
+      const embed = new Discord.MessageEmbed()
         .setTitle("GitHub")
         .setColor("#8966FF")
         .setURL("https://github.com/Ladvace/DiscordBot")
@@ -542,72 +604,74 @@ client.on("message", async (message) => {
           )
           .catch(console.error);
       }
-    } else if (command === "reset") {
-      let member = message.mentions.members.first();
+    }
+    // else if (command === "reset") {
+    //   let member = message.mentions.members.first();
 
-      if (isAdmin) {
-        if (member) {
-          member.roles.remove([...member.guild.roles.cache.keyArray()]);
+    //   if (isAdmin) {
+    //     if (member) {
+    //       member.roles.remove([...member.guild.roles.cache.keyArray()]);
 
-          await userSchema.findOne(
-            {
-              id: `${member.id}#${message.guild.id}`,
-            },
-            (err, user) => {
-              if (err) console.log(err);
-              if (!user) {
-                if (member.id === "589693244456042497") return;
-                const newUser = new userSchema({
-                  id: `${member.id}#${message.guild.id}`,
-                  name: member.user.username,
-                  messages_count: 0,
-                  rank: 0,
-                });
+    //       await userSchema.findOne(
+    //         {
+    //           id: `${member.id}#${message.guild.id}`,
+    //         },
+    //         (err, user) => {
+    //           if (err) console.log(err);
+    //           if (!user) {
+    //             if (member.id === "589693244456042497") return;
+    //             const newUser = new userSchema({
+    //               id: `${member.id}#${message.guild.id}`,
+    //               name: member.user.username,
+    //               messages_count: 0,
+    //               rank: 0,
+    //             });
 
-                return newUser.save();
-              } else {
-                user.messages_count = args[1];
-                user.rank = args[1];
+    //             return newUser.save();
+    //           } else {
+    //             user.messages_count = args[1];
+    //             user.rank = args[1];
 
-                user.save();
-              }
-            }
-          );
-        } else {
-          message.member.roles.remove([
-            ...message.member.guild.roles.cache.keyArray(),
-          ]);
+    //             user.save();
+    //           }
+    //         }
+    //       );
+    //     } else {
+    //       message.member.roles.remove([
+    //         ...message.member.guild.roles.cache.keyArray(),
+    //       ]);
 
-          await userSchema.findOne(
-            {
-              id: `${message.author.id}#${message.guild.id}`,
-            },
-            (err, user) => {
-              if (err) console.log(err);
+    //       await userSchema.findOne(
+    //         {
+    //           id: `${message.author.id}#${message.guild.id}`,
+    //         },
+    //         (err, user) => {
+    //           if (err) console.log(err);
 
-              if (!user) {
-                if (message.author.id === "589693244456042497") return;
-                const newUser = new userSchema({
-                  id: `${message.author.id}#${message.guild.id}`,
-                  name: message.author.username,
-                  messages_count: 0,
-                  rank: 0,
-                });
+    //           if (!user) {
+    //             if (message.author.id === "589693244456042497") return;
+    //             const newUser = new userSchema({
+    //               id: `${message.author.id}#${message.guild.id}`,
+    //               name: message.author.username,
+    //               messages_count: 0,
+    //               rank: 0,
+    //             });
 
-                return newUser.save();
-              } else {
-                user.messages_count = 0;
-                user.rank = 0;
+    //             return newUser.save();
+    //           } else {
+    //             user.messages_count = 0;
+    //             user.rank = 0;
 
-                user.save();
-              }
-            }
-          );
-        }
-      }
+    //             user.save();
+    //           }
+    //         }
+    //       );
+    //     }
+    //   }
 
-      return message.channel.send("Your rank has been reset!");
-    } else if (command === "setPrefix") {
+    //   return message.channel.send("Your rank has been reset!");
+    // }
+    else if (command === "setPrefix") {
       if (isAdmin && args[0].length === 1) {
         await config.findOne(
           {
@@ -706,17 +770,19 @@ client.on("message", async (message) => {
       ];
 
       const date = Date.now();
-      const hoursToMinutes = 60 * timeOut;
+      const hoursToMinutes =
+        60 * (timeOut && typeof Number(timeOut) === "number" ? timeOut : 60);
       const hoursToMilliseconds = 60 * hoursToMinutes * 1000;
-      const datePlusHour = timeOut
-        ? date + hoursToMilliseconds
-        : date + 3600000;
+      const datePlusHour =
+        timeOut && typeof Number(timeOut) === "number"
+          ? date + hoursToMilliseconds
+          : date + 3600000;
 
       if (optionValues.length === 0 || !question)
         return message.channel.send("Command not valid!");
       if (optionValues.length >= 10) return;
 
-      let embed = new Discord.MessageEmbed()
+      const embed = new Discord.MessageEmbed()
         .setTitle("Poll")
         .addField(question, "\u200B")
         .setColor("#8966FF")
@@ -764,18 +830,18 @@ client.on("message", async (message) => {
       polls[message.guild.id][dateTimeStamp] = {
         ended: false,
         timer: setTimeout(() => {
-          console.log(
-            "poolSolutionNNN",
-            pollAnswers,
-            poolSolution,
-            dateTimeStamp
-          );
-
           Object.entries(pollAnswers).map((x) => {
             const sum = Object.values(pollAnswers).reduce(sumReducer);
 
             poolSolution[x[0]] = sum > 0 ? Math.floor(scoreTest(x[1], sum)) : 0;
           });
+          console.log(
+            "pool",
+            hoursToMilliseconds,
+            message.guild.id,
+            dateTimeStamp,
+            polls[message.guild.id][dateTimeStamp]
+          );
           polls[message.guild.id][dateTimeStamp].ended = true;
           clearTimeout(polls[message.guild.id][dateTimeStamp].timer);
 
@@ -798,10 +864,10 @@ client.on("message", async (message) => {
             )
             .setThumbnail("https://i.imgur.com/AtmK18i.png", "")
             .setTimestamp(+new Date())
-            .setFooter("Ends", null);
+            .setFooter("Ended", null);
 
           embedMessage.edit(newEmbed);
-        }, timeOut && 3600000),
+        }, hoursToMilliseconds),
       };
     }
   }
@@ -832,7 +898,7 @@ client.on("guildMemberAdd", async (member) => {
 
   // );
 
-  console.log(member.guild.channels.cache);
+  console.log("guildMemberAdd", member.guild.channels.cache);
   const server = await config.findOne(
     {
       id: member.guild.id,

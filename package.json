@@ -39,8 +39,6 @@
     "mongoose": "^5.10.11",
     "nodemon": "^2.0.6",
     "npm-check-updates": "^9.2.3",
-    "sequelize": "^6.3.5",
-    "sqlite3": "^5.0.0",
     "tmi.js": "^1.5.0"
   },
   "devDependencies": {
