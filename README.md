@@ -17,7 +17,8 @@ You need to add the prefix `!` before the command e.g: `!rank`.
 - **github** - It shows you the github repo link.
 - **help** - It shows you all the commands.
 - **poll** - It allows you to make a poll.
-- **setPrefix** - It allows you to set a new prefix for your server..
+- **setPrefix** - It allows you to set a new prefix for your server.
+- **setNotificationChannel** - It allows you to set a new text channel where the notification will be sent.
 
 ## Steps ▶️
 

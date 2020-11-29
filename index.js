@@ -556,6 +556,12 @@ client.on("message", async (message) => {
           "It allows you to set a new command prefix"
         )
         .addField(
+          `\`\`\`${
+            RemotePrefix.guildPrefix || prefix
+          }setNotificationChannel\`\`\``,
+          "It allows you to set a new text channel where the notification will be sent"
+        )
+        .addField(
           `\`\`\`${RemotePrefix.guildPrefix || prefix}poll\`\`\``,
           "It allows you to create a poll, use --poll to get more information"
         );
