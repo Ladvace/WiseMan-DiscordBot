@@ -5,7 +5,7 @@ const { prefix, minutes } = require("./config.json");
 const env = require("dotenv").config();
 const client = new Discord.Client();
 const mongoose = require("mongoose");
-const tmi = require("tmi.js");
+// const tmi = require("tmi.js");
 const { config, userSchema } = require("./mongodb");
 
 mongoose.connect(
@@ -26,6 +26,7 @@ let millisToTheHour = millisPerHour - millisPastTheHour;
 let pollAnswers = {};
 
 const incrementRank = async (id, name) => {
+  console.log("incrementRank", id, name);
   await userSchema.findOne(
     {
       id: id,
@@ -43,6 +44,7 @@ const incrementRank = async (id, name) => {
         return newUser.save();
       }
       if (user) {
+        console.log("incrementing rank:", id, name, user.rank + 1);
         user.rank = user.rank + 1;
         user.save();
       }
@@ -158,27 +160,27 @@ const levelUp = async (message, guildId, user, level) => {
   }
 };
 
-const clientTmi = new tmi.Client({
-  options: { debug: true },
-  connection: {
-    reconnect: true,
-    secure: true,
-  },
-  identity: {
-    username: "wiseManBot",
-    password: process.env.TOKEN,
-  },
-  channels: [],
-});
+// const clientTmi = new tmi.Client({
+//   options: { debug: true },
+//   connection: {
+//     reconnect: true,
+//     secure: true,
+//   },
+//   identity: {
+//     username: "wiseManBot",
+//     password: process.env.TOKEN,
+//   },
+//   channels: [],
+// });
 
-clientTmi.connect().catch(console.error);
+// clientTmi.connect().catch(console.error);
 
-clientTmi.on("message", (channel, tags, message, self) => {
-  if (self) return;
-  if (message.toLowerCase() === "!hello") {
-    clientTmi.say(channel, `@${tags.username}, heya!`);
-  }
-});
+// clientTmi.on("message", (channel, tags, message, self) => {
+//   if (self) return;
+//   if (message.toLowerCase() === "!hello") {
+//     clientTmi.say(channel, `@${tags.username}, heya!`);
+//   }
+// });
 
 let timers = {};
 let intervals = {};
@@ -189,6 +191,7 @@ client.once("ready", async () => {
   console.log("Ready!");
 
   client.guilds.cache.keyArray().map(async (x) => {
+    console.log("guilds", x);
     await config.findOne(
       {
         id: x,
@@ -363,12 +366,12 @@ client.on("voiceStateUpdate", async (oldState, newState) => {
 
     try {
       if (
-        timers[newState.id][newState.guild.id] &&
-        intervals[newState.id][newState.guild.id]
+        timers[newState.guild.id][newState.id] &&
+        intervals[newState.guild.id][newState.id]
       ) {
         console.log("clear");
-        clearTimeout(timers[oldState.id][newState.guild.id]);
-        clearInterval(intervals[oldState.id][newState.guild.id]);
+        clearTimeout(timers[oldState.guild.id][newState.id]);
+        clearInterval(intervals[oldState.guild.id][newState.id]);
       }
     } catch (e) {
       console.error(e);
