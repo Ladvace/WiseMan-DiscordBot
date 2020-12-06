@@ -59,7 +59,12 @@ $ npm start
 ```
 ## Support 💰
 
-- if you want to support the me and the discord development consider donating [here](https://www.paypal.com/donate?hosted_button_id=WJWDBJENVNGHE) and voting the bot [here](https://top.gg/bot/589693244456042497)
+- if you want to support the me and the discord development consider voting the bot [here](https://top.gg/bot/589693244456042497) and
+donating:
+
+
+[![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=WJWDBJENVNGHE)
+
 
 
 
