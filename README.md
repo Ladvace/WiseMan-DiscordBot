@@ -57,9 +57,14 @@ $ npm start
    "minutes": 60
 }
 ```
+## Support 💰
+
+- if you want to support the me and the discord development consider donating [here](https://www.paypal.com/donate?hosted_button_id=WJWDBJENVNGHE) and voting the bot [here](https://top.gg/bot/589693244456042497)
+
+
 
 ## Authors ❤️
 
 - **Gianmarco Cavallo** (ladvace) - [Github Profile](https://github.com/Ladvace)
 
-### If you have any problems or question feel free to contact me! 🔧😃
+### If you have any problems or question open an issue or feel free to contact me! 🔧😃
