@@ -24,9 +24,9 @@ let millisPerHour = 60 * minutes * 1000; //1h
 let millisPastTheHour = Date.now() % millisPerHour;
 let millisToTheHour = millisPerHour - millisPastTheHour;
 let pollAnswers = {};
+const botId = "589693244456042497";
 
 const incrementRank = async (id, name) => {
-  console.log("incrementRank", id, name);
   await userSchema.findOne(
     {
       id: id,
@@ -79,8 +79,9 @@ const incrementMessages = async (id, name) => {
 
 const levelUp = async (message, guildId, user, level) => {
   if (message.user.id === client.user.id) return;
+  console.log("level up");
 
-  const notificationChannelID = await config.findOne(
+  const channel = await config.findOne(
     {
       id: guildId,
     },
@@ -92,6 +93,8 @@ const levelUp = async (message, guildId, user, level) => {
           guildPrefix: "!",
           guildNotificationChannelID: null,
           welcomeChannel: null,
+          customRanks: {},
+          rankTime: null,
         });
 
         return newServer.save();
@@ -99,33 +102,48 @@ const levelUp = async (message, guildId, user, level) => {
     }
   );
 
-  if (user.rank > 0 && user.rank % 10 === 0) {
-    const Oldrole = message.guild.roles.cache.find(
-      (role) => role.name === `Level ${level - 10}`
-    );
+  // if (user.rank > 0 && user.rank % 10 === 0) {
+  const Oldrole = message.guild.roles.cache.find(
+    (role) => role.name === `Level ${level - 10}`
+  );
 
-    const role = message.guild.roles.cache.find(
-      (role) =>
-        role.name === (user.rank < 500 ? `Level ${level}` : `Level 500+`)
-    );
+  const role = message.guild.roles.cache.find(
+    (role) => role.name === (user.rank < 500 ? `Level ${level}` : `Level 500+`)
+  );
 
-    // const voiceChannel = message.member.voice.channel;
+  const hasCustomRank = channel.customRanks.hasOwnProperty(level);
+  // const voiceChannel = message.member.voice.channel;
 
-    // const voiceChannel = message.user.member.voice.channel;
+  // const voiceChannel = message.user.member.voice.channel;
 
-    const embed = new Discord.MessageEmbed()
-      .setAuthor(message.user.username)
-      .setColor("#8966ff")
-      .setThumbnail(message.user.avatarURL({ format: "png" }))
-      .addField("Rank", `${level}`);
+  const embed = new Discord.MessageEmbed()
+    .setAuthor(message.user.username)
+    .setColor("#8966ff")
+    .setThumbnail(message.user.avatarURL({ format: "png" }))
+    .addField("Rank", `${level}`);
 
-    if (notificationChannelID.guildNotificationChannelID) {
-      const channell = client.channels.cache.get(
-        notificationChannelID.guildNotificationChannelID
-      );
+  const notificationChannel = client.channels.cache.get(
+    channel.guildNotificationChannelID
+  );
 
+  if (hasCustomRank) {
+    const customRankId = channel.customRanks[level];
+
+    const customRole = message.guild.roles.cache.get(customRankId);
+
+    console.log("customRole", customRole);
+
+    message.roles
+      .add(customRole)
+      .then(() => {
+        if (channel.guildNotificationChannelID)
+          return notificationChannel.send(embed);
+      })
+      .catch(console.error);
+  } else {
+    if (user.rank > 0 && user.rank % 10 === 0) {
       if (!role) {
-        message.guild.roles
+        const newRole = await message.guild.roles
           .create({
             data: {
               name: user.rank < 500 ? `Level ${level}` : `Level 500+`,
@@ -135,11 +153,13 @@ const levelUp = async (message, guildId, user, level) => {
           .then(console.log)
           .catch(console.error);
 
-        // if (notificationChannelID.guildNotificationChannelID) {
+        console.log("newRole", newRole);
+        // if (channel.guildNotificationChannelID) {
         message.roles
-          .add(role)
+          .add(newRole)
           .then(() => {
-            return channell.send(embed);
+            if (channel.guildNotificationChannelID)
+              return notificationChannel.send(embed);
           })
           .catch(console.error);
         // }
@@ -151,13 +171,15 @@ const levelUp = async (message, guildId, user, level) => {
         message.roles
           .add(role)
           .then(() => {
-            console.log("ch", channell);
-            return channell.send(embed);
+            console.log("ch", notificationChannel);
+            if (channel.guildNotificationChannelID)
+              return notificationChannel.send(embed);
           })
           .catch(console.error);
       }
     }
   }
+  // }
 };
 
 // const clientTmi = new tmi.Client({
@@ -191,7 +213,6 @@ client.once("ready", async () => {
   console.log("Ready!");
 
   client.guilds.cache.keyArray().map(async (x) => {
-    console.log("guilds", x);
     await config.findOne(
       {
         id: x,
@@ -204,6 +225,8 @@ client.once("ready", async () => {
             guildPrefix: "!",
             guildNotificationChannelID: null,
             welcomeChannel: null,
+            customRanks: {},
+            rankTime: null,
           });
 
           return newServer.save();
@@ -222,7 +245,7 @@ client.once("ready", async () => {
           (err, user) => {
             if (err) console.log(err);
             if (!user) {
-              if (y.user.id === "589693244456042497") return;
+              if (y.user.id === botId) return;
               const newUser = new userSchema({
                 id: `${y.user.id}#${x.guild.id}`,
                 name: y.user.username,
@@ -242,7 +265,7 @@ client.once("ready", async () => {
           (err, user) => {
             if (err) console.log(err);
             if (!user) {
-              if (y.user.id === "589693244456042497") return;
+              if (y.user.id === botId) return;
               const newUser = new userSchema({
                 id: `${y.user.id}#${x.guild.id}`,
                 name: y.user.username,
@@ -262,6 +285,7 @@ client.once("ready", async () => {
 
           intervals[x.guild.id][y.user.id] = setInterval(async () => {
             if (user) {
+              // console.log("message");
               await incrementRank(
                 `${y.user.id}#${x.guild.id}`,
                 y.user.username
@@ -274,7 +298,7 @@ client.once("ready", async () => {
                 (err, user) => {
                   if (err) console.log(err);
                   if (!user) {
-                    if (y.user.id === "589693244456042497") return;
+                    if (y.user.id === botId) return;
                     const newUser = new userSchema({
                       id: `${y.user.id}#${x.guild.id}`,
                       name: y.user.username,
@@ -297,72 +321,66 @@ client.once("ready", async () => {
 });
 
 client.on("voiceStateUpdate", async (oldState, newState) => {
-  if (oldState.channel === undefined && newState.channel !== undefined) {
-    // User join a voice channel
-    console.log("joined");
-    if (newUserChannel.type === "voice") {
-      const user = await userSchema.findOne(
-        {
-          id: `${newState.id}#${newState.guild.id}`,
-        },
-        (err, user) => {
-          if (err) console.log(err);
-          if (!user) {
-            if (newState.id === "589693244456042497") return;
-            const newUser = new userSchema({
-              id: `${newState.id}#${newState.guild.id}`,
-              name: y.user.username,
-              messages_count: 0,
-              rank: 0,
-            });
+  if (newState.channelID && !oldState.channelID) {
+    console.log("Someone joined");
 
-            return newUser.save();
-          }
+    const user = await userSchema.findOne(
+      {
+        id: `${newState.id}#${newState.guild.id}`,
+      },
+      (err, user) => {
+        if (err) console.log(err);
+        if (!user) {
+          if (newState.id === botId) return;
+          const newUser = new userSchema({
+            id: `${newState.id}#${newState.guild.id}`,
+            name: y.user.username,
+            messages_count: 0,
+            rank: 0,
+          });
+
+          return newUser.save();
         }
-      );
+      }
+    );
 
-      // User leaves a voice channel
+    timers[newState.guild.id] = {};
+    intervals[newState.guild.id] = {};
 
-      timers[newState.guild.id] = {};
-      intervals[newState.guild.id] = {};
+    timers[newState.guild.id][newState.id] = setTimeout(() => {
+      intervals[newState.guild.id][newState.id] = setInterval(async () => {
+        if (user) {
+          await incrementRank(
+            `${newState.id}#${newState.guild.id}`,
+            newState.member.user.username
+          );
 
-      timers[newState.guild.id][newState.id] = setTimeout(() => {
-        intervals[newState.guild.id][newState.id] = setInterval(async () => {
-          if (user) {
-            await incrementRank(
-              `${newState.id}#${newState.guild.id}`,
-              y.user.username
-            );
+          const user1 = await userSchema.findOne(
+            {
+              id: `${newState.id}#${newState.guild.id}`,
+            },
+            (err, user) => {
+              if (err) console.log(err);
+              if (!user) {
+                if (newState.id === botId) return;
+                const newUser = new userSchema({
+                  id: `${newState.id}#${newState.guild.id}`,
+                  name: y.user.username,
+                  messages_count: 0,
+                  rank: 0,
+                });
 
-            const user1 = await userSchema.findOne(
-              {
-                id: `${newState.id}#${newState.guild.id}`,
-              },
-              (err, user) => {
-                if (err) console.log(err);
-                if (!user) {
-                  if (newState.id === "589693244456042497") return;
-                  const newUser = new userSchema({
-                    id: `${newState.id}#${newState.guild.id}`,
-                    name: y.user.username,
-                    messages_count: 0,
-                    rank: 0,
-                  });
-
-                  return newUser.save();
-                }
+                return newUser.save();
               }
-            );
+            }
+          );
 
-            await levelUp(newMember, newState.guild.id, user1, user1.rank);
-          }
-        }, millisPerHour);
-      }, millisToTheHour);
-    }
-  } else if (newState.channel === null) {
-    // User leaves a voice channel
-
-    console.log("exit", newState.guild.id);
+          await levelUp(newState.member, newState.guild.id, user1, user1.rank);
+        }
+      }, millisPerHour);
+    }, millisToTheHour);
+  } else if (oldState.channelID && !newState.channelID) {
+    console.log("Someone left");
 
     try {
       if (
@@ -383,6 +401,15 @@ client.on("message", async (message) => {
   const input = message.content;
   const args = input.split(" ").slice(1, input.split(" ").length);
 
+  const configSettings = {
+    id: message.guild.id,
+    guildPrefix: "!",
+    guildNotificationChannelID: null,
+    welcomeChannel: null,
+    customRanks: {},
+    rankTime: null,
+  };
+
   const RemotePrefix = await config.findOne(
     {
       id: message.guild.id,
@@ -390,12 +417,7 @@ client.on("message", async (message) => {
     (err, server) => {
       if (err) console.log(err);
       if (!server) {
-        const newServer = new config({
-          id: message.author.id,
-          guildPrefix: "!",
-          guildNotificationChannelID: null,
-          welcomeChannel: null,
-        });
+        const newServer = new config(configSettings);
 
         return newServer.save();
       }
@@ -404,8 +426,6 @@ client.on("message", async (message) => {
 
   const prefx =
     RemotePrefix?.guildPrefix !== prefix ? RemotePrefix?.guildPrefix : prefix;
-
-  console.log("command", prefix, input, args);
 
   const command =
     input.charAt(0) === prefx ? input.substr(1).split(" ")[0] : input;
@@ -446,7 +466,7 @@ client.on("message", async (message) => {
   }
 
   const perms = message.member.permissions;
-  const canManageRoles = perms.has("MANAGE_ROLES");
+  // const canManageRoles = perms.has("MANAGE_ROLES");
   const isAdmin = perms.has("ADMINISTRATOR");
   if (message.content.charAt(0) === prefx) {
     if (command === "rank") {
@@ -459,7 +479,7 @@ client.on("message", async (message) => {
           (err, user) => {
             if (err) console.log(err);
             if (!user) {
-              if (member.user.id === "589693244456042497") return;
+              if (member.user.id === botId) return;
               const newUser = new userSchema({
                 id: `${member.user.id}#${message.guild.id}`,
                 name: member.user.username,
@@ -597,23 +617,24 @@ client.on("message", async (message) => {
     //       .catch(console.error, `ther was a problem when creating your role!`);
     //   }
     // }
-    else if (command === "assignRole") {
-      let role = message.guild.roles.cache.find(
-        (role) => role.name === args[0]
-      );
-      let member = message.mentions.members.first();
+    // else if (command === "assignRole") {
+    //   let role = message.guild.roles.cache.find(
+    //     (role) => role.name === args[0]
+    //   );
+    //   let member = message.mentions.members.first();
 
-      if (canManageRoles) {
-        member.roles
-          .add(role)
-          .then(
-            message.channel.send(
-              `**${args[0]}** role assigned to **${member.user.username}**`
-            )
-          )
-          .catch(console.error);
-      }
-    }
+    //   if (canManageRoles) {
+    //     member.roles
+    //       .add(role)
+    //       .then(
+    //         message.channel.send(
+    //           `**${args[0]}** role assigned to **${member.user.username}**`
+    //         )
+    //       )
+    //       .catch(console.error);
+    //   }
+    // }
+
     // else if (command === "reset") {
     //   let member = message.mentions.members.first();
 
@@ -689,12 +710,7 @@ client.on("message", async (message) => {
           (err, server) => {
             if (err) console.log(err);
             if (!server) {
-              const newServer = new config({
-                id: message.guild.id,
-                guildPrefix: "!",
-                guildNotificationChannelID: null,
-                welcomeChannel: null,
-              });
+              const newServer = new config(configSettings);
 
               return newServer.save();
             }
@@ -716,12 +732,7 @@ client.on("message", async (message) => {
           (err, server) => {
             if (err) console.log(err);
             if (!server) {
-              const newServer = new config({
-                id: message.guild.id,
-                guildPrefix: "!",
-                guildNotificationChannelID: null,
-                welcomeChannel: null,
-              });
+              const newServer = new config(configSettings);
 
               return newServer.save();
             }
@@ -802,7 +813,6 @@ client.on("message", async (message) => {
         .addFields(
           ...optionValues
             .map((x, i) => {
-              console.log(x);
               if (x !== "--option" && x !== "--question") {
                 return {
                   name: `${emoji[i]} :  ${x}`,
@@ -844,13 +854,7 @@ client.on("message", async (message) => {
 
             poolSolution[x[0]] = sum > 0 ? Math.floor(scoreTest(x[1], sum)) : 0;
           });
-          console.log(
-            "pool",
-            hoursToMilliseconds,
-            message.guild.id,
-            dateTimeStamp,
-            polls[message.guild.id][dateTimeStamp]
-          );
+
           polls[message.guild.id][dateTimeStamp].ended = true;
           clearTimeout(polls[message.guild.id][dateTimeStamp].timer);
 
@@ -878,6 +882,42 @@ client.on("message", async (message) => {
           embedMessage.edit(newEmbed);
         }, hoursToMilliseconds),
       };
+    } else if (command === "setRank") {
+      const level = args[0];
+      const roleId = args[1];
+
+      await config.findOne(
+        {
+          id: message.guild.id,
+        },
+        (err, server) => {
+          if (err) console.log(err);
+          if (!server) {
+            const newServer = new config(configSettings);
+
+            return newServer.save();
+          } else {
+            server.customRanks = { ...server.customRanks, [level]: roleId };
+            // server.customRanks.set(level, roleId);
+            return server.save();
+          }
+        }
+      );
+      const role = message.guild.roles.cache.get(roleId);
+
+      message.guild.roles
+        .create(roleId)
+        .then(() => {
+          return message.channel.send(
+            `Now **${role.name}** will be gained at level ${level}!`
+          );
+        })
+        .catch((e) => {
+          console.error(e);
+          return message.channel.send(
+            `Something went wrong! probably the level or the role id were not valid. Tru again!`
+          );
+        });
     }
   }
 });
@@ -916,10 +956,12 @@ client.on("guildMemberAdd", async (member) => {
       if (err) console.log(err);
       if (!server) {
         const newServer = new config({
-          id: x,
+          id: member.guild.id,
           guildPrefix: "!",
           guildNotificationChannelID: null,
           welcomeChannel: null,
+          customRanks: {},
+          rankTime: null,
         });
 
         return newServer.save();
