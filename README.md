@@ -8,7 +8,7 @@
 
 This bot allows you to level up based on the time you spend in a vocal channel and how much you write in a text channel
 
-**If you don't need/want to host and set it up on your own you can add your bot to your server clicking on this here:
+**If you don't need/want to host and set it up on your own you can add your bot to your server clicking here:
 [Invite](https://discord.com/oauth2/authorize?client_id=589693244456042497&scope=bot&permissions=2147483639)**
 
 ## Commands 🎨
