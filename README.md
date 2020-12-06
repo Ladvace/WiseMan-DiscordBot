@@ -8,6 +8,9 @@
 
 This bot allows you to level up based on the time you spend in a vocal channel and how much you write in a text channel
 
+**If you don't need/want to host and set it up on your own you can add your bot to your server clicking on this here:
+[Invite](https://discord.com/oauth2/authorize?client_id=589693244456042497&scope=bot&permissions=2147483639)**
+
 ## Commands 🎨
 
 You need to add the prefix `!` before the command e.g: `!rank`.
@@ -19,6 +22,7 @@ You need to add the prefix `!` before the command e.g: `!rank`.
 - **poll** - It allows you to make a poll.
 - **setPrefix** - It allows you to set a new prefix for your server.
 - **setNotificationChannel** - It allows you to set a new text channel where the notification will be sent.
+- **setRank** - It allows you to set a custom role for each level.
 
 ## Steps ▶️
 

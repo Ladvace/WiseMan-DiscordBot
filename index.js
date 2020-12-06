@@ -514,7 +514,10 @@ client.on("message", async (message) => {
       message.channel.send(message.author.avatarURL({ format: "png" }));
     } else if (command === "help") {
       const pollRegex = /--poll\s+(\S+)/gi;
+      const setRankRegex = /--setRank\s+(\S+)/gi;
+
       const pollHelp = input.match(pollRegex);
+      const setRankHelp = input.match(setRankRegex);
 
       const embed = new Discord.MessageEmbed();
 
@@ -552,6 +555,31 @@ client.on("message", async (message) => {
           );
 
         return message.channel.send(embed);
+      } else if (setRankHelp) {
+        embed
+          .setTitle("setRank")
+          .setThumbnail("https://i.imgur.com/AtmK18i.png")
+          .setColor("#8966FF")
+          .addField(
+            `\`\`\`${RemotePrefix.guildPrefix || prefix}setRank\`\`\``,
+            "\u200B"
+          )
+          .addFields({
+            name: `Arguments`,
+            value: "\u200B",
+            inline: false,
+          })
+          .addField(
+            "you must enter as **first** argument the level you want the role to be setted and as **second** argumnet the role id",
+            "\u200B"
+          )
+
+          .addField(
+            "Example:",
+            `\`\`\`${RemotePrefix.guildPrefix || prefix}setRank 7 idRank\`\`\``
+          );
+
+        return message.channel.send(embed);
       }
 
       embed
@@ -577,6 +605,10 @@ client.on("message", async (message) => {
         .addField(
           `\`\`\`${RemotePrefix.guildPrefix || prefix}setPrefix\`\`\``,
           "It allows you to set a new command prefix"
+        )
+        .addField(
+          `\`\`\`${RemotePrefix.guildPrefix || prefix}setRank\`\`\``,
+          "It allows you to set a custom role for each level, use --setRank to get more information"
         )
         .addField(
           `\`\`\`${
