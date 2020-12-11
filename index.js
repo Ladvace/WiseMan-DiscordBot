@@ -24,6 +24,59 @@ let millisPerHour = 60 * minutes * 1000; //1h
 let millisPastTheHour = Date.now() % millisPerHour;
 let millisToTheHour = millisPerHour - millisPastTheHour;
 let pollAnswers = {};
+
+// const defaultLevels = [
+//   10,
+//   20,
+//   30,
+//   40,
+//   50,
+//   60,
+//   70,
+//   80,
+//   90,
+//   100,
+//   110,
+//   120,
+//   130,
+//   140,
+//   150,
+//   160,
+//   170,
+//   180,
+//   190,
+//   200,
+//   210,
+//   220,
+//   230,
+//   240,
+//   250,
+//   260,
+//   270,
+//   280,
+//   290,
+//   300,
+//   310,
+//   320,
+//   330,
+//   340,
+//   350,
+//   360,
+//   370,
+//   380,
+//   390,
+//   400,
+//   410,
+//   420,
+//   430,
+//   440,
+//   450,
+//   460,
+//   470,
+//   480,
+//   490,
+// ];
+
 const botId = "589693244456042497";
 
 const incrementRank = async (id, name) => {
@@ -102,15 +155,13 @@ const levelUp = async (message, guildId, user, level) => {
     }
   );
 
-  // if (user.rank > 0 && user.rank % 10 === 0) {
-  const Oldrole = message.guild.roles.cache.find(
-    (role) => role.name === `Level ${level - 10}`
+  // const roles = message.guild.roles.cache.keyArray();
+  const roles = message.guild.roles.cache.map((role) => role.name);
+  const rolesExist = roles.includes((name) =>
+    name.includes(`Level ${user.rank}`)
   );
 
-  const role = message.guild.roles.cache.find(
-    (role) => role.name === (user.rank < 500 ? `Level ${level}` : `Level 500+`)
-  );
-
+  // const customRankNum = Object.keys(channel.customRanks).length;
   const hasCustomRank = channel.customRanks.hasOwnProperty(level);
   // const voiceChannel = message.member.voice.channel;
 
@@ -142,41 +193,48 @@ const levelUp = async (message, guildId, user, level) => {
       .catch(console.error);
   } else {
     if (user.rank > 0 && user.rank % 10 === 0) {
-      if (!role) {
-        const newRole = await message.guild.roles
-          .create({
-            data: {
-              name: user.rank < 500 ? `Level ${level}` : `Level 500+`,
-              color: "#8966ff",
-            },
-          })
-          .then(console.log)
-          .catch(console.error);
+      console.log(
+        "roles",
+        rolesExist,
+        user.rank,
+        message.guild.roles.cache.map((role) => role.name)
+        // rolesExist.includes(`Level ${user.rank}`)
+      );
+      // if (!role) {
+      //   const newRole = await message.guild.roles
+      //     .create({
+      //       data: {
+      //         name: user.rank < 500 ? `Level ${level}` : `Level 500+`,
+      //         color: "#8966ff",
+      //       },
+      //     })
+      //     .then(console.log)
+      //     .catch(console.error);
 
-        console.log("newRole", newRole);
-        // if (channel.guildNotificationChannelID) {
-        message.roles
-          .add(newRole)
-          .then(() => {
-            if (channel.guildNotificationChannelID)
-              return notificationChannel.send(embed);
-          })
-          .catch(console.error);
-        // }
-      } else {
-        console.log("existing role");
-        if (Oldrole) {
-          message.roles.remove(Oldrole);
-        }
-        message.roles
-          .add(role)
-          .then(() => {
-            console.log("ch", notificationChannel);
-            if (channel.guildNotificationChannelID)
-              return notificationChannel.send(embed);
-          })
-          .catch(console.error);
-      }
+      //   console.log("newRole", newRole);
+      //   // if (channel.guildNotificationChannelID) {
+      //   message.roles
+      //     .add(newRole)
+      //     .then(() => {
+      //       if (channel.guildNotificationChannelID)
+      //         return notificationChannel.send(embed);
+      //     })
+      //     .catch(console.error);
+      //   // }
+      // } else {
+      //   console.log("existing role");
+      //   if (Oldrole) {
+      //     message.roles.remove(Oldrole);
+      //   }
+      //   message.roles
+      //     .add(role)
+      //     .then(() => {
+      //       console.log("ch", notificationChannel);
+      //       if (channel.guildNotificationChannelID)
+      //         return notificationChannel.send(embed);
+      //     })
+      //     .catch(console.error);
+      // }
     }
   }
   // }
