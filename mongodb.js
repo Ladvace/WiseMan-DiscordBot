@@ -15,6 +15,7 @@ const userSchema = new Schema({
   name: String,
   messages_count: Number,
   rank: Number,
+  discordName: String,
 });
 
 module.exports = {
