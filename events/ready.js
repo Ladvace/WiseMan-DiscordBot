@@ -7,6 +7,8 @@ module.exports = async (client) => {
 
   client.config.timers = {};
   client.config.intervals = {};
+  client.config.usersReactions = {};
+  client.config.pollAnswers = {};
 
   const millisPerHour = 60 * localConfig.minutes * 1000; //1h
   const millisPastTheHour = Date.now() % millisPerHour;
@@ -53,7 +55,7 @@ module.exports = async (client) => {
           (err, user) => {
             if (err) console.log(err);
             if (!user) {
-              if (y.user.id === botId) return;
+              if (y.user.id === client.user.id) return;
               const newUser = new userSchema(userSchemaConfig);
 
               return newUser.save();
@@ -68,7 +70,7 @@ module.exports = async (client) => {
           (err, user) => {
             if (err) console.log(err);
             if (!user) {
-              if (y.user.id === botId) return;
+              if (y.user.id === client.user.id) return;
               const newUser = new userSchema(userSchemaConfig);
 
               return newUser.save();
@@ -96,7 +98,7 @@ module.exports = async (client) => {
                   (err, user) => {
                     if (err) console.log(err);
                     if (!user) {
-                      if (y.user.id === botId) return;
+                      if (y.user.id === client.user.id) return;
                       const newUser = new userSchema(userSchemaConfig);
 
                       return newUser.save();

@@ -25,7 +25,7 @@ module.exports = async (client, oldState, newState) => {
       (err, user) => {
         if (err) console.log(err);
         if (!user) {
-          if (newState.id === botId) return;
+          if (newState.id === client.user.id) return;
           const newUser = new userSchema(userSchemaConfig);
 
           return newUser.save();
@@ -33,7 +33,7 @@ module.exports = async (client, oldState, newState) => {
       }
     );
 
-    console.log("FFF", client.config);
+    console.log("FFF", newState.guild.id, newState.id);
 
     client.config.timers[newState.guild.id] = {};
     client.config.intervals[newState.guild.id] = {};
@@ -55,7 +55,7 @@ module.exports = async (client, oldState, newState) => {
               (err, user) => {
                 if (err) console.log(err);
                 if (!user) {
-                  if (newState.id === botId) return;
+                  if (newState.id === client.user.id) return;
                   const newUser = new userSchema(userSchemaConfig);
 
                   return newUser.save();

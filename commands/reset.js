@@ -15,6 +15,8 @@ exports.run = async (client, message, args) => {
     discordName: `${message.author.username}#${message.author.discriminator}`,
   };
 
+  console.log("args[1]", args[1]);
+
   if (isAdmin) {
     if (member) {
       member.roles.remove([...member.guild.roles.cache.keyArray()]);
@@ -25,7 +27,7 @@ exports.run = async (client, message, args) => {
         (err, user) => {
           if (err) console.log(err);
           if (!user) {
-            if (member.id === botId) return;
+            if (member.id === client.user.id) return;
             const newUser = new userSchema(userSchemaConfig);
             return newUser.save();
           } else {
@@ -46,7 +48,7 @@ exports.run = async (client, message, args) => {
         (err, user) => {
           if (err) console.log(err);
           if (!user) {
-            if (message.author.id === botId) return;
+            if (message.author.id === client.user.id) return;
             const newUser = new userSchema(userSchemaConfig);
             return newUser.save();
           } else {

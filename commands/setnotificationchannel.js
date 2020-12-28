@@ -14,6 +14,8 @@ exports.run = async (client, message, args) => {
   const perms = message.member.permissions;
   const isAdmin = perms.has("ADMINISTRATOR");
 
+  const channelId = args[0];
+
   if (isAdmin) {
     await config.findOne(
       {
@@ -26,10 +28,10 @@ exports.run = async (client, message, args) => {
           return newServer.save();
         }
         if (server) {
-          const channelName = client.channels.cache.get(args[0])?.name;
+          const channelName = client.channels.cache.get(channelId)?.name;
 
           if (channelName) {
-            server.guildNotificationChannelID = args[0].trim();
+            server.guildNotificationChannelID = channelId.trim();
             server.save();
             const embed = new Discord.MessageEmbed()
               .setColor("#8966ff")
@@ -37,7 +39,7 @@ exports.run = async (client, message, args) => {
 
             return message.channel.send(embed);
           } else {
-            const isNull = args[0] == "null";
+            const isNull = channelId == "null";
 
             if (isNull) {
               server.guildNotificationChannelID = null;

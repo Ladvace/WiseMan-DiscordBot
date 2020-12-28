@@ -42,7 +42,7 @@ exports.run = async (client, message) => {
       (err, user) => {
         if (err) console.log(err);
         if (!user) {
-          if (member.user.id === botId) return;
+          if (member.user.id === client.user.id) return;
           const newUser = new userSchema(userSchemaConfig);
           return newUser.save();
         }

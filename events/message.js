@@ -73,7 +73,7 @@ module.exports = async (client, message) => {
     .split(/ +/g);
   const command = args.shift().toLowerCase();
 
-  console.log("client.config.prefix", client.config.prefix, command, args);
+  console.log("command", client.config.prefix, command, args);
 
   // Grab the command data from the client.commands Enmap
   const cmd = client.commands.get(command);

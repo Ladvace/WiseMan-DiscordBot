@@ -1,6 +1,6 @@
 const { config } = require("../mongodb");
 
-module.exports = async (member) => {
+module.exports = async (client, member) => {
   const server = await config.findOne(
     {
       id: member.guild.id,

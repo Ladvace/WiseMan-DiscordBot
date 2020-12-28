@@ -21,10 +21,7 @@ exports.run = async (client, message, args) => {
 
   if (!message.member.hasPermission("ADMINISTRATOR")) return;
 
-  client.config.pollAnswers = {};
-
   const parsedTime = time.slice(0, time.length - 1);
-  console.log("test", time, time.includes("h"), parsedTime);
 
   switch (time[time.length - 1]) {
     case "s":
@@ -65,8 +62,6 @@ exports.run = async (client, message, args) => {
     await embedMessage.react("🎉");
 
     setTimeout(() => {
-      console.log("client.user", embedMessage.author.id);
-
       embedMessage.reactions.cache.get("🎉").users.remove(client.user.id);
       embedMessage.reactions.cache
         .get("🎉")
