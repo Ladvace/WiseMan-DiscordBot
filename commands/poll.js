@@ -10,7 +10,7 @@ exports.run = async (client, message, args) => {
 
   const userId = message.author.id;
 
-  client.config.reactionCount[userId] = {};
+  // client.config.reactionCount[userId] = {};
 
   const input = message.content;
 
@@ -134,6 +134,7 @@ exports.run = async (client, message, args) => {
       (vote) => vote !== 0
     ).length;
 
+    console.log("AAA", client.config.poolSolution);
     const newEmbed = new Discord.MessageEmbed()
       .setColor("#8966FF")
       .setDescription(

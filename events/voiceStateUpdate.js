@@ -33,8 +33,6 @@ module.exports = async (client, oldState, newState) => {
       }
     );
 
-    console.log("FFF", newState.guild.id, newState.id);
-
     client.config.timers[newState.guild.id] = {};
     client.config.intervals[newState.guild.id] = {};
 

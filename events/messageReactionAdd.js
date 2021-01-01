@@ -10,7 +10,20 @@ module.exports = async (client, reaction, user) => {
   const embedPoll = await reaction.message.channel.messages.fetch(postId);
   const currentEmoji = reaction.emoji.name;
 
-  const emoji = client.config.reactionCount[userId][postId]?.currentEmoji;
+  client.config.reactionCount[userId] = {
+    ...client.config.reactionCount[userId],
+  };
+
+  // console.log(
+  //   "pino",
+  //   postId,
+  //   client.config.reactionCount[userId]
+  //   // client.config.reactionCount[userId][postId]
+  // );
+
+  const emoji = client.config.reactionCount[userId].hasOwnProperty(postId)
+    ? client.config.reactionCount[userId][postId]?.currentEmoji
+    : null;
 
   const { message } = reaction;
 
@@ -25,6 +38,8 @@ module.exports = async (client, reaction, user) => {
         currentEmoji,
       },
     };
+
+    console.log("NON SO", emoji, embedPoll.reactions.cache.get(emoji));
 
     embedPoll.reactions.cache.get(emoji).users.remove(userId);
   } else {

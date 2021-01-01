@@ -19,7 +19,12 @@ const incrementRank = async (id, name, discriminator) => {
 
         return newUser.save();
       } else {
-        console.log("incrementing rank:", user.discordName, user.rank);
+        console.log(
+          "incrementing rank:",
+          user.discordName,
+          user.rank,
+          user.rank + 1
+        );
         user.rank = (user.rank ? user.rank : 0) + 1;
         user.save();
       }
@@ -103,7 +108,7 @@ const levelUp = async (message, guildId, level, client) => {
         if (channel.guildNotificationChannelID)
           return notificationChannel.send(embed);
       })
-      .catch(console.error);
+      .catch((e) => console.error("test", e));
   }
 };
 

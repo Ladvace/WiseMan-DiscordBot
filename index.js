@@ -3,15 +3,46 @@ const Discord = require("discord.js");
 const localConfig = require("./config.json");
 // eslint-disable-next-line no-unused-vars
 const env = require("dotenv").config();
-const client = new Discord.Client({
-  partials: ["REACTION"],
-});
+const client = new Discord.Client();
+
+const { Player } = require("discord-player");
+
+client.player = new Player(client);
+
 const mongoose = require("mongoose");
 const fs = require("fs");
 // const tmi = require("tmi.js");
 const Enmap = require("enmap");
 
 client.config = localConfig;
+
+client.player.on("trackStart", (message, track) => {
+  message.channel.send({
+    embed: {
+      color: "RED",
+      author: { name: track.title },
+
+      fields: [
+        { name: "Channel", value: track.author, inline: true },
+        {
+          name: "Requested by",
+          value: track.requestedBy.username,
+          inline: true,
+        },
+        {
+          name: "From playlist",
+          value: track.fromPlaylist ? "Yes" : "No",
+          inline: true,
+        },
+
+        { name: "Views", value: track.views, inline: true },
+        { name: "Duration", value: track.duration, inline: true },
+      ],
+      thumbnail: { url: track.thumbnail },
+      timestamp: new Date(),
+    },
+  });
+});
 
 mongoose.connect(
   "mongodb://localhost:27017/wiseManBot",
