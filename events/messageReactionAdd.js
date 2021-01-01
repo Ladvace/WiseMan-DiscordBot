@@ -1,28 +1,47 @@
-module.exports = async (client, reaction, user) => {
-  const userId = user.id;
-  const botId = client.user.id;
-  const postId = reaction.message.channel.lastMessageID;
+const { Collection } = require("discord.js");
+const reactionCount = new Collection();
+// const polls = new Set();
 
-  client.config.usersReactions[userId] = {};
-  client.config.usersReactions[userId][postId] = {};
+module.exports = async (client, reaction, user) => {
+  if (user.id === client.user.id) return;
+  const userId = user.id;
+  const postId = reaction.message.id;
 
   const embedPoll = await reaction.message.channel.messages.fetch(postId);
-  const emoji = reaction.emoji.name;
-  const emojiId = reaction.emoji.reaction.message.id;
-  const votedEmoji = client.config.usersReactions[userId][postId];
+  const currentEmoji = reaction.emoji.name;
 
-  if (Number.isInteger(parseInt(votedEmoji, 10)) && votedEmoji !== emojiId) {
-    if (userId !== botId)
-      embedPoll.reactions.cache.get(emoji).users.remove(userId);
+  const emoji = client.config.reactionCount[userId][postId]?.currentEmoji;
+
+  const { message } = reaction;
+
+  if (!reactionCount.get(message)) reactionCount.set(message, new Collection());
+
+  const userCount = reactionCount.get(message);
+
+  if (emoji && currentEmoji !== emoji) {
+    client.config.reactionCount[userId] = {
+      [postId]: {
+        reactionCount,
+        currentEmoji,
+      },
+    };
+
+    embedPoll.reactions.cache.get(emoji).users.remove(userId);
   } else {
-    client.config.usersReactions[userId][postId] = emojiId;
-  }
+    userCount.set(user, (userCount.get(user) || 0) + 1);
 
-  // client.config.pollAnswers[postId][emoji] = reaction.count - 1;
-  client.config.pollAnswers[postId] = {
-    ...client.config.pollAnswers[postId],
-    [emoji]: reaction.count - 1,
-  };
+    client.config.reactionCount[userId] = {
+      [postId]: {
+        reactionCount,
+        currentEmoji,
+      },
+    };
+
+    client.config.pollAnswers[postId] = {
+      ...client.config.pollAnswers[postId],
+      [currentEmoji]: reaction.count,
+    };
+  }
 
   if (reaction.partial) {
     // If the message this reaction belongs to was removed the fetching might result in an API error, which we need to handle

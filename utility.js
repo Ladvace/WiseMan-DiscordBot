@@ -19,12 +19,7 @@ const incrementRank = async (id, name, discriminator) => {
 
         return newUser.save();
       } else {
-        console.log(
-          "incrementing rank:",
-          user.discordName,
-          user.rank,
-          user.rank + 1
-        );
+        console.log("incrementing rank:", user.discordName, user.rank);
         user.rank = (user.rank ? user.rank : 0) + 1;
         user.save();
       }
@@ -94,17 +89,12 @@ const levelUp = async (message, guildId, level, client) => {
     channel.guildNotificationChannelID
   );
 
-  if (hasCustomRank) {
-    const customRankId = channel.customRanks[level];
+  const customRankId = channel.customRanks[level];
+  const roleExist = message.guild.roles.cache.has(customRankId);
+  if (hasCustomRank && roleExist) {
     const customRole = message.guild.roles.cache.get(customRankId);
 
-    console.log(
-      "customRole",
-      customRole,
-      customRankId,
-      channel.customRanks,
-      level
-    );
+    console.log("customRole", customRole);
 
     message.roles
       .add(customRole)

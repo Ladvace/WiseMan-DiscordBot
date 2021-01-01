@@ -19,7 +19,7 @@ exports.run = async (client, message, args) => {
   let timeInMilliseconds = 0;
   const prize = message.content.split(" ").slice(2).join(" ");
 
-  if (!message.member.hasPermission("ADMINISTRATOR")) return;
+  if (!message.member.has("ADMINISTRATOR")) return;
 
   const parsedTime = time.slice(0, time.length - 1);
 

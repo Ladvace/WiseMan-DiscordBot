@@ -11,6 +11,15 @@ module.exports = async (client, message) => {
     discordName: `${message.author.username}#${message.author.discriminator}`,
   };
 
+  const configSettings = {
+    id: message.guild.id,
+    guildPrefix: "!",
+    guildNotificationChannelID: null,
+    welcomeChannel: null,
+    customRanks: {},
+    rankTime: null,
+  };
+
   const RemotePrefix = await config.findOne(
     {
       id: message.guild.id,

@@ -6,15 +6,11 @@ exports.run = async (client, message, args) => {
   const timeoutRegex = /--timeout\s+(\S+)/gi;
   const optionRegex = /--option\s+(\S+)/gi;
 
-  // const questionRegex = /--question\s+(\S+)/gi;
-  // const questionRegex = /(?<=--question).+(\s--)/gi;
-
   const questionRegex = /--question\s*(.*?)\s+--/;
 
-  client.config.polls = {};
-  client.config.poolSolution = {};
-  client.config.pollAnswers = {};
-  client.config.usersReactions = {};
+  const userId = message.author.id;
+
+  client.config.reactionCount[userId] = {};
 
   const input = message.content;
 
@@ -103,10 +99,16 @@ exports.run = async (client, message, args) => {
     ":bar_chart: **POLL** :bar_chart:",
     embed
   );
-  const embedId = embedMessage.channel.lastMessageID;
+
+  const embedId = embedMessage.id;
 
   await Promise.all(
     optionValues.map(async (x, i) => {
+      client.config.pollAnswers[embedId] = {
+        ...client.config.pollAnswers[embedId],
+        [emoji[i]]: 0,
+      };
+
       if (x !== "--option" && x !== "--question")
         await embedMessage.react(emoji[i]);
     })
@@ -118,53 +120,49 @@ exports.run = async (client, message, args) => {
     return score;
   };
 
-  client.config.polls[message.guild.id] = {};
+  setTimeout(() => {
+    Object.entries(client.config.pollAnswers[embedId]).map((x) => {
+      const sum = Object.values(client.config.pollAnswers[embedId]).reduce(
+        sumReducer
+      );
 
-  const dateTimeStamp = +new Date();
+      client.config.poolSolution[x[0]] =
+        sum > 0 ? Math.floor(scoreTest(x[1], sum)) : 0;
+    });
 
-  client.config.polls[message.guild.id][dateTimeStamp] = {
-    ended: false,
-    timer: setTimeout(() => {
-      Object.entries(client.config.pollAnswers[embedId]).map((x) => {
-        const sum = Object.values(client.config.pollAnswers[embedId]).reduce(
-          sumReducer
-        );
+    const totalVotes = Object.values(client.config.pollAnswers[embedId]).filter(
+      (vote) => vote !== 0
+    ).length;
 
-        client.config.poolSolution[x[0]] =
-          sum > 0 ? Math.floor(scoreTest(x[1], sum)) : 0;
-      });
-
-      client.config.polls[message.guild.id][dateTimeStamp].ended = true;
-      clearTimeout(client.config.polls[message.guild.id][dateTimeStamp].timer);
-
-      const newEmbed = new Discord.MessageEmbed()
-        .setColor("#8966FF")
-        .setDescription(
-          `***${question}***\nReact to this message with the corresponding emoji to vote for that option.
-          \nHosted by: ${message.author}
+    const newEmbed = new Discord.MessageEmbed()
+      .setColor("#8966FF")
+      .setDescription(
+        `***${question}***\n
+          Total votes: ${totalVotes}\n
+          Hosted by: ${message.author}
 
           `
-        )
-        .addFields(
-          ...Object.entries(client.config.pollAnswers[embedId]).map((x) => {
-            return {
-              name: `${x[0]} :  ${client.config.poolSolution[x[0]] || 0}%`,
-              value: "\u200B",
-              inline: false,
-            };
-          })
-        )
-        .setTimestamp(+new Date())
-        .setFooter("Ended", null);
-      embedMessage.edit(":bar_chart: **POLL ENDED** :bar_chart:", newEmbed);
+      )
+      .addFields(
+        ...Object.entries(client.config.pollAnswers[embedId]).map((x, i) => {
+          return {
+            name: `${optionValues[i]} : ${
+              client.config.poolSolution[x[0]] || 0
+            }%`,
+            value: "\u200B",
+            inline: false,
+          };
+        })
+      )
+      .setTimestamp(+new Date())
+      .setFooter("Ended", null);
+    embedMessage.edit(":bar_chart: **POLL ENDED** :bar_chart:", newEmbed);
 
-      Object.keys(client.config.pollAnswers[embedId]).map((emoji) => {
-        embedMessage.reactions.cache
-          .get(emoji)
-          .users.cache.map((userId) =>
-            embedMessage.reactions.cache.get(emoji).users.remove(userId)
-          );
+    Object.keys(client.config.pollAnswers[embedId]).map((emoji) => {
+      embedMessage.reactions.cache.get(emoji)?.users.cache.map((userId) => {
+        embedMessage.reactions.cache.get(emoji).users.remove(userId);
       });
-    }, hoursToMilliseconds),
-  };
+    });
+  }, hoursToMilliseconds);
+  // };
 };

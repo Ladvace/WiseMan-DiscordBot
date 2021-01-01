@@ -7,8 +7,11 @@ module.exports = async (client) => {
 
   client.config.timers = {};
   client.config.intervals = {};
-  client.config.usersReactions = {};
   client.config.pollAnswers = {};
+  client.config.reactionCount = {};
+  client.config.usersReaction = {};
+  client.config.polls = {};
+  client.config.poolSolution = {};
 
   const millisPerHour = 60 * localConfig.minutes * 1000; //1h
   const millisPastTheHour = Date.now() % millisPerHour;

@@ -15,8 +15,6 @@ exports.run = async (client, message, args) => {
     discordName: `${message.author.username}#${message.author.discriminator}`,
   };
 
-  console.log("args[1]", args[1]);
-
   if (isAdmin) {
     if (member) {
       member.roles.remove([...member.guild.roles.cache.keyArray()]);
