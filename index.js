@@ -19,7 +19,7 @@ client.config = localConfig;
 client.player.on("trackStart", (message, track) => {
   message.channel.send({
     embed: {
-      color: "RED",
+      color: "#8966FF",
       author: { name: track.title },
 
       fields: [
@@ -55,32 +55,6 @@ mongoose.connect(
     console.log("Connected to the db");
   }
 );
-
-// let millisPerHour = 60 * localConfig.minutes * 1000; //1h
-// let millisPastTheHour = Date.now() % millisPerHour;
-// let millisToTheHour = millisPerHour - millisPastTheHour;
-
-// const clientTmi = new tmi.Client({
-//   options: { debug: true },
-//   connection: {
-//     reconnect: true,
-//     secure: true,
-//   },
-//   identity: {
-//     username: "wiseManBot",
-//     password: process.env.TOKEN,
-//   },
-//   channels: [],
-// });
-
-// clientTmi.connect().catch(console.error);
-
-// clientTmi.on("message", (channel, tags, message, self) => {
-//   if (self) return;
-//   if (message.toLowerCase() === "!hello") {
-//     clientTmi.say(channel, `@${tags.username}, heya!`);
-//   }
-// });
 
 fs.readdir("./events/", (err, files) => {
   if (err) return console.error(err);

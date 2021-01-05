@@ -25,44 +25,41 @@ const applyText = (canvas, text) => {
 };
 
 module.exports = async (client, member) => {
-  const server = await config.findOne(
+  const { welcomeMessage } = await config.findOne(
     {
       id: member.guild.id,
     },
     (err, server) => {
       if (err) console.log(err);
       if (!server) {
-        const newServer = new config({
-          id: member.guild.id,
-          guildPrefix: "!",
-          guildNotificationChannelID: null,
-          welcomeChannel: null,
-          customRanks: {},
-          rankTime: null,
-        });
+        const newServer = new config(configSettings);
 
         return newServer.save();
       }
     }
   );
 
-  if (!server.welcomeChannel) return;
+  const defaultMessage = `Welcome ${member.username}!`;
 
-  const image = path.join(__dirname, "..", "assets", "wallpaper.jpg");
+  const image = path.join(__dirname, "..", "assets", "wallpaper.png");
 
   const canvas = Canvas.createCanvas(700, 250);
   const ctx = canvas.getContext("2d");
 
   const background = await Canvas.loadImage(image);
+
   ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
 
-  ctx.strokeStyle = "#8966FF";
   ctx.strokeRect(0, 0, canvas.width, canvas.height);
 
-  ctx.font = applyText(canvas, `Welcome ${message.author.username}!`);
+  ctx.font = applyText(
+    canvas,
+    welcomeMessage.replace(/\[user]/g, member.username) || defaultMessage
+  );
+
   ctx.fillStyle = "#FFFF";
   ctx.fillText(
-    `Welcome ${message.author.username}!`,
+    welcomeMessage.replace(/\[user]/g, member.username) || defaultMessage,
     canvas.width / 2.5,
     canvas.height / 1.8
   );
@@ -82,8 +79,5 @@ module.exports = async (client, member) => {
     "welcome-image.png"
   );
 
-  message.channel.send(
-    `Welcome to the server, ${message.author.username}!`,
-    attachment
-  );
+  member.channel.send(`Welcome to the server, ${member.username}!`, attachment);
 };

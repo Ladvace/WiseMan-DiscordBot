@@ -1,7 +1,7 @@
 const Discord = require("discord.js");
 const { userSchema } = require("../mongodb");
 
-exports.run = async (client, message, args) => {
+exports.run = async (client, message) => {
   const member = message.mentions.members.first();
 
   const perms = message.member.permissions;
@@ -29,8 +29,8 @@ exports.run = async (client, message, args) => {
             const newUser = new userSchema(userSchemaConfig);
             return newUser.save();
           } else {
-            user.messages_count = args[1];
-            user.rank = args[1];
+            user.messages_count = 0;
+            user.rank = 0;
             user.save();
           }
         }

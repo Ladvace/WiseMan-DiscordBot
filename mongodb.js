@@ -8,6 +8,7 @@ const config = new Schema({
   welcomeChannel: String,
   customRanks: { type: Object, default: {} },
   rankTime: Number,
+  welcomeMessage: String,
 });
 
 const userSchema = new Schema({
