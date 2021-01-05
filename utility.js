@@ -32,6 +32,37 @@ const incrementRank = async (id, name, discriminator) => {
   );
 };
 
+const decrementRank = async (id, name, discriminator) => {
+  await userSchema.findOne(
+    {
+      id: id,
+    },
+    (err, user) => {
+      if (err) console.log(err);
+      if (!user) {
+        const newUser = new userSchema({
+          id: id,
+          name: name,
+          messages_count: 0,
+          rank: 0,
+          discordName: `${name}#${discriminator}`,
+        });
+
+        return newUser.save();
+      } else {
+        console.log(
+          "decrement rank:",
+          user.discordName,
+          user.rank,
+          user.rank - 1
+        );
+        user.rank = user.rank - 1;
+        user.save();
+      }
+    }
+  );
+};
+
 const incrementMessages = async (id, name) => {
   await userSchema.findOne(
     {
@@ -112,4 +143,4 @@ const levelUp = async (message, guildId, level, client) => {
   }
 };
 
-module.exports = { incrementRank, incrementMessages, levelUp };
+module.exports = { incrementRank, decrementRank, incrementMessages, levelUp };
