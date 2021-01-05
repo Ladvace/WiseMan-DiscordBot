@@ -56,7 +56,7 @@ const decrementRank = async (id, name, discriminator) => {
           user.rank,
           user.rank - 1
         );
-        user.rank = user.rank - 1;
+        user.rank = user.rank === 0 ? 0 : user.rank - 1;
         user.save();
       }
     }

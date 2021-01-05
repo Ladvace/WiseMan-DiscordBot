@@ -7,6 +7,7 @@ exports.run = async (client, message, args) => {
   if (args.length < 2) return message.channel.send(errorEmbed);
 
   const time = args[0].toLowerCase();
+  const winnersCount = args[1].toLowerCase();
 
   let timeDuration = null;
   const timeDurations = {
@@ -17,9 +18,9 @@ exports.run = async (client, message, args) => {
   };
 
   let timeInMilliseconds = 0;
-  const prize = message.content.split(" ").slice(2).join(" ");
+  const prize = message.content.split(" ").slice(3).join(" ");
 
-  if (!message.member.has("ADMINISTRATOR")) return;
+  if (!message.member.hasPermission("ADMINISTRATOR")) return;
 
   const parsedTime = time.slice(0, time.length - 1);
 
@@ -63,14 +64,18 @@ exports.run = async (client, message, args) => {
 
     setTimeout(() => {
       embedMessage.reactions.cache.get("🎉").users.remove(client.user.id);
-      embedMessage.reactions.cache
-        .get("🎉")
-        .users.remove(embedMessage.author.id);
+      embedMessage.reactions.cache.get("🎉").users.remove(message.author.id);
 
       setTimeout(() => {
         const winner = embedMessage.reactions.cache
           .get("🎉")
-          .users.cache.random();
+          .users.cache.random(winnersCount);
+
+        console.log(
+          "winner",
+          winner,
+          embedMessage.reactions.cache.get("🎉").users.cache
+        );
 
         if (embedMessage.reactions.cache.get("🎉").users.cache.size < 1) {
           const winnerEmbed = new Discord.MessageEmbed()
