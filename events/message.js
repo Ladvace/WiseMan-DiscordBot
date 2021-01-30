@@ -1,4 +1,4 @@
-const { config, userSchema } = require("../mongodb");
+const firebase = require("firebase");
 const localConfig = require("../config.json");
 const { incrementRank, levelUp, incrementMessages } = require("../utility");
 
@@ -21,56 +21,52 @@ module.exports = async (client, message) => {
     defaultRole: null,
   };
 
-  const RemotePrefix = await config.findOne(
-    {
-      id: message.guild.id,
-    },
-    (err, server) => {
-      if (err) console.log(err);
-      if (!server) {
-        const newServer = new config(configSettings);
+  const serverRef = firebase
+    .firestore()
+    .collection("servers")
+    .doc(message.guild.id);
 
-        return newServer.save();
-      }
-    }
-  );
+  const server = await serverRef.get();
 
-  const user = await userSchema.findOne(
-    {
-      id: `${message.author.id}#${message.guild.id}`,
-    },
-    (err, user) => {
-      if (err) console.log(err);
-      if (!user) {
-        const newUser = new userSchema(userSchemaConfig);
+  const serverData = server.data();
 
-        return newUser.save();
-      }
-    }
-  );
+  if (!server.exists) {
+    serverRef.set(configSettings);
+  }
+
+  const userRef = firebase
+    .firestore()
+    .collection("users")
+    .doc(message.guild.id);
+
+  const user = await userRef.get();
+
+  const userData = user.data();
+
+  if (!user.exists) {
+    userRef.set(userSchemaConfig);
+  }
 
   client.config.prefix =
-    RemotePrefix?.guildPrefix !== localConfig.prefix
-      ? RemotePrefix?.guildPrefix
+    serverData?.guildPrefix !== localConfig.prefix
+      ? serverData?.guildPrefix
       : localConfig.prefix;
 
   // Ignore all bots
   if (message.author.bot) return;
 
-  if (user) {
-    await incrementMessages(
+  await incrementMessages(
+    `${message.author.id}#${message.guild.id}`,
+    message.author.username
+  );
+  if (userData.messages_count % 25 === 0) {
+    await incrementRank(
       `${message.author.id}#${message.guild.id}`,
-      message.author.username
+      message.author.username,
+      message.author.discriminator
     );
-    if (user.messages_count % 25 === 0) {
-      await incrementRank(
-        `${message.author.id}#${message.guild.id}`,
-        message.author.username,
-        message.author.discriminator
-      );
 
-      await levelUp(message.member, message.guild.id, user.rank, client);
-    }
+    await levelUp(message.member, message.guild.id, userData.rank, client);
   }
 
   // Ignore messages not starting with the prefix (in config.json)

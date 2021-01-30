@@ -39,6 +39,8 @@
     "dotenv": "^8.2.0",
     "enmap": "^5.8.2",
     "ffmpeg-static": "^4.2.7",
+    "firebase": "^8.2.5",
+    "firebase-admin": "^9.4.2",
     "mongoose": "^5.11.9",
     "nodemon": "^2.0.6"
   },

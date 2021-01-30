@@ -1,5 +1,5 @@
 const Discord = require("discord.js");
-const { config } = require("../mongodb");
+const firebase = require("firebase");
 
 exports.run = async (client, message, args) => {
   const configSettings = {
@@ -18,43 +18,39 @@ exports.run = async (client, message, args) => {
   const channelId = args[0];
 
   if (isAdmin) {
-    await config.findOne(
-      {
-        id: message.guild.id,
-      },
-      (err, server) => {
-        if (err) console.log(err);
-        if (!server) {
-          const newServer = new config(configSettings);
-          return newServer.save();
-        }
-        if (server) {
-          const channelName = client.channels.cache.get(channelId)?.name;
+    const channelName = client.channels.cache.get(channelId)?.name;
 
-          if (channelName) {
-            server.guildNotificationChannelID = channelId.trim();
-            server.save();
-            const embed = new Discord.MessageEmbed()
-              .setColor("#8966ff")
-              .addField("Notification channel:", `${channelName}`);
+    const serverRef = firebase
+      .firestore()
+      .collection("servers")
+      .doc(message.guild.id);
 
-            return message.channel.send(embed);
-          } else {
-            const isNull = channelId == "null";
+    const server = await serverRef.get();
 
-            if (isNull) {
-              server.guildNotificationChannelID = null;
-              server.save();
-            }
+    if (!server.exists) {
+      serverRef.set(configSettings);
+    }
 
-            const embed = new Discord.MessageEmbed()
-              .setColor("#8966ff")
-              .addField("Error", `Id not valid`);
+    if (channelName) {
+      serverRef.update({ guildNotificationChannelID: channelId.trim() });
 
-            return message.channel.send(embed);
-          }
-        }
+      const embed = new Discord.MessageEmbed()
+        .setColor("#8966ff")
+        .addField("Notification channel:", `${channelName}`);
+
+      return message.channel.send(embed);
+    } else {
+      const isNull = channelId == "null";
+
+      if (isNull) {
+        serverRef.update({ guildNotificationChannelID: null });
       }
-    );
+
+      const embed = new Discord.MessageEmbed()
+        .setColor("#8966ff")
+        .addField("Error", `Id not valid`);
+
+      return message.channel.send(embed);
+    }
   }
 };

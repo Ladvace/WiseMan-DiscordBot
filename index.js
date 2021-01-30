@@ -9,10 +9,24 @@ const { Player } = require("discord-player");
 
 client.player = new Player(client);
 
+const firebase = require("firebase");
 const mongoose = require("mongoose");
 const fs = require("fs");
 // const tmi = require("tmi.js");
 const Enmap = require("enmap");
+
+const firebaseConfig = {
+  apiKey: process.env.apiKey,
+  authDomain: process.env.authDomain,
+  databaseURL: process.env.databaseURL,
+  projectId: process.env.projectId,
+  storageBucket: process.env.storageBucket,
+  messagingSenderId: process.env.messagingSenderId,
+  appId: process.env.appId,
+  measurementId: process.env.measurementId,
+};
+
+if (firebase.apps.length === 0) firebase.initializeApp(firebaseConfig);
 
 client.config = localConfig;
 

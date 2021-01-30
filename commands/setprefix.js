@@ -1,5 +1,5 @@
 const Discord = require("discord.js");
-const { config } = require("../mongodb");
+const firebase = require("firebase");
 
 exports.run = async (client, message, args) => {
   const perms = message.member.permissions;
@@ -16,30 +16,26 @@ exports.run = async (client, message, args) => {
   };
 
   if (isAdmin && args[0]?.length === 1) {
-    await config.findOne(
-      {
-        id: message.guild.id,
-      },
-      (err, server) => {
-        if (err) console.log(err);
-        if (!server) {
-          const newServer = new config(configSettings);
+    const serverRef = firebase
+      .firestore()
+      .collection("servers")
+      .doc(message.guild.id);
 
-          return newServer.save();
-        }
+    const server = await serverRef.get();
 
-        if (server) {
-          server.guildPrefix = args[0].trim();
-          server.save();
+    if (!server.exists) {
+      serverRef.set(configSettings);
+    }
 
-          const embed = new Discord.MessageEmbed()
-            .setTitle("Prefix")
-            .setColor("#8966ff")
-            .setDescription(`Prefix setted to \`\`\`${args[0]}\`\`\``);
+    if (server) {
+      serverRef.update({ guildPrefix: args[0].trim() });
 
-          return message.channel.send(embed);
-        }
-      }
-    );
+      const embed = new Discord.MessageEmbed()
+        .setTitle("Prefix")
+        .setColor("#8966ff")
+        .setDescription(`Prefix setted to \`\`\`${args[0]}\`\`\``);
+
+      return message.channel.send(embed);
+    }
   }
 };

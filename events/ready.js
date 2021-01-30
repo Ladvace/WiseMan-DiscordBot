@@ -1,6 +1,6 @@
-const { config, userSchema } = require("../mongodb");
+const firebase = require("firebase");
 const localConfig = require("../config.json");
-const { incrementRank, levelUp, decrementRank } = require("../utility");
+const { incrementRank, levelUp } = require("../utility");
 
 module.exports = async (client) => {
   console.log("Ready!");
@@ -18,28 +18,45 @@ module.exports = async (client) => {
   const millisPastTheHour = Date.now() % millisPerHour;
   const millisToTheHour = millisPerHour - millisPastTheHour;
 
-  client.guilds.cache.keyArray().map(async (x) => {
-    await config.findOne(
-      {
-        id: x,
-      },
-      (err, server) => {
-        if (err) console.log(err);
-        if (!server) {
-          const newServer = new config({
-            id: x,
-            guildPrefix: "!",
-            guildNotificationChannelID: null,
-            welcomeChannel: null,
-            customRanks: {},
-            rankTime: null,
-            defaultRole: null,
-          });
+  // const firebaseConfig = {
+  //   apiKey: process.env.apiKey,
+  //   authDomain: process.env.authDomain,
+  //   databaseURL: process.env.databaseURL,
+  //   projectId: process.env.projectId,
+  //   storageBucket: process.env.storageBucket,
+  //   messagingSenderId: process.env.messagingSenderId,
+  //   appId: process.env.appId,
+  //   measurementId: process.env.measurementId,
+  // };
 
-          return newServer.save();
-        }
-      }
-    );
+  // if (firebase.apps.length === 0) firebase.initializeApp(firebaseConfig);
+
+  client.guilds.cache.keyArray().map(async (x) => {
+    const serverRef = firebase.firestore().collection("servers").doc(x);
+
+    const server = await serverRef.get();
+
+    if (!server.exists) {
+      firebase.firestore().collection("servers").doc(x).set({
+        id: x,
+        guildPrefix: "!",
+        guildNotificationChannelID: null,
+        welcomeChannel: null,
+        customRanks: {},
+        rankTime: null,
+        defaultRole: null,
+      });
+    }
+
+    // firebase.firestore().collection("servers").doc(x).set({
+    //   id: x,
+    //   guildPrefix: "!",
+    //   guildNotificationChannelID: null,
+    //   welcomeChannel: null,
+    //   customRanks: {},
+    //   rankTime: null,
+    //   defaultRole: null,
+    // });
   });
 
   client.channels.cache.map((x) => {
@@ -53,36 +70,22 @@ module.exports = async (client) => {
           discordName: `${y.user.username}#${y.user.discriminator}`,
         };
 
-        await userSchema.findOne(
-          {
-            id: `${y.user.id}#${x.guild.id}`,
-          },
-          (err, user) => {
-            if (err) console.log(err);
-            if (!user) {
-              if (y.user.id === client.user.id) return;
-              const newUser = new userSchema(userSchemaConfig);
+        const userRef = firebase
+          .firestore()
+          .collection("users")
+          .doc(`${y.user.id}#${x.guild.id}`);
 
-              return newUser.save();
-            }
-          }
-        );
+        const user = await userRef.get();
 
-        const user = await userSchema.findOne(
-          {
-            id: `${y.user.id}#${x.guild.id}`,
-          },
-          (err, user) => {
-            if (err) console.log(err);
-            if (!user) {
-              if (y.user.id === client.user.id) return;
-              const newUser = new userSchema(userSchemaConfig);
+        if (!user.exists) {
+          firebase
+            .firestore()
+            .collection("users")
+            .doc(`${y.user.id}#${x.guild.id}`)
+            .set(userSchemaConfig);
+        }
 
-              return newUser.save();
-            }
-          }
-        );
-
+        console.log("user exist");
         client.config.timers[x.guild.id] = {};
         client.config.intervals[x.guild.id] = {};
         client.config.timers[x.guild.id][y.user.id] = setTimeout(async () => {
@@ -105,34 +108,15 @@ module.exports = async (client) => {
               //   );
               // }
 
-              if (user) {
-                // client.config.rankIncrementin24hCountrankIncrementin24hCount[
-                //   x.guild.id
-                // ][y.user.id] += 1;
+              // if (user) {
+              // client.config.rankIncrementin24hCountrankIncrementin24hCount[
+              //   x.guild.id
+              // ][y.user.id] += 1;
 
-                await incrementRank(
-                  `${y.user.id}#${x.guild.id}`,
-                  y.user.username,
-                  y.user.discriminator
-                );
+              await incrementRank(`${y.user.id}#${x.guild.id}`);
 
-                const user1 = await userSchema.findOne(
-                  {
-                    id: `${y.user.id}#${x.guild.id}`,
-                  },
-                  (err, user) => {
-                    if (err) console.log(err);
-                    if (!user) {
-                      if (y.user.id === client.user.id) return;
-                      const newUser = new userSchema(userSchemaConfig);
-
-                      return newUser.save();
-                    }
-                  }
-                );
-
-                await levelUp(y, x.guild.id, user1.rank, client);
-              }
+              await levelUp(y, x.guild.id, user.data().rank, client);
+              // }
             },
             millisPerHour
           );

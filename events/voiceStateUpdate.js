@@ -1,4 +1,4 @@
-const { userSchema } = require("../mongodb");
+const firebase = require("firebase");
 const { incrementRank, levelUp } = require("../utility");
 const localConfig = require("../config.json");
 
@@ -18,20 +18,16 @@ module.exports = async (client, oldState, newState) => {
       discordName: `${newState.member.user.username}#${newState.member.user.discriminator}`,
     };
 
-    const user = await userSchema.findOne(
-      {
-        id: `${newState.id}#${newState.guild.id}`,
-      },
-      (err, user) => {
-        if (err) console.log(err);
-        if (!user) {
-          if (newState.id === client.user.id) return;
-          const newUser = new userSchema(userSchemaConfig);
+    const users = firebase
+      .firestore()
+      .collection("users")
+      .doc(`${newState.id}#${newState.guild.id}`);
 
-          return newUser.save();
-        }
-      }
-    );
+    const user = await users.get();
+
+    if (!user.exists) {
+      firebase.firestore().collection("users").doc(id).set(userSchemaConfig);
+    }
 
     client.config.timers[newState.guild.id] = {};
     client.config.intervals[newState.guild.id] = {};
@@ -39,36 +35,17 @@ module.exports = async (client, oldState, newState) => {
     client.config.timers[newState.guild.id][newState.id] = setTimeout(() => {
       client.config.intervals[newState.guild.id][newState.id] = setInterval(
         async () => {
-          if (user) {
+          if (user.exists) {
             // client.config.rankIncrementin24hCount[newState.guild.id][
             //   newState.id
             // ] += 1;
 
-            await incrementRank(
-              `${newState.id}#${newState.guild.id}`,
-              newState.member.user.username,
-              newState.member.user.discriminator
-            );
-
-            const user1 = await userSchema.findOne(
-              {
-                id: `${newState.id}#${newState.guild.id}`,
-              },
-              (err, user) => {
-                if (err) console.log(err);
-                if (!user) {
-                  if (newState.id === client.user.id) return;
-                  const newUser = new userSchema(userSchemaConfig);
-
-                  return newUser.save();
-                }
-              }
-            );
+            await incrementRank(`${newState.id}#${newState.guild.id}`);
 
             await levelUp(
               newState.member,
               newState.guild.id,
-              user1.rank,
+              user.data().rank,
               client
             );
           }

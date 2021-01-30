@@ -1,5 +1,5 @@
 const Discord = require("discord.js");
-const { userSchema } = require("../mongodb");
+const firebase = require("firebase");
 
 exports.run = async (client, message) => {
   const member = message.mentions.members.first();
@@ -7,57 +7,56 @@ exports.run = async (client, message) => {
   const perms = message.member.permissions;
   const isAdmin = perms.has("ADMINISTRATOR");
 
-  const userSchemaConfig = {
-    id: `${message.author.id}#${message.guild.id}`,
-    name: message.author.username,
-    messages_count: 0,
-    rank: 0,
-    discordName: `${message.author.username}#${message.author.discriminator}`,
-  };
-
   if (isAdmin) {
     if (member) {
       member.roles.remove([...member.guild.roles.cache.keyArray()]);
-      await userSchema.findOne(
-        {
-          id: `${member.id}#${message.guild.id}`,
-        },
-        (err, user) => {
-          if (err) console.log(err);
-          if (!user) {
-            if (member.id === client.user.id) return;
-            const newUser = new userSchema(userSchemaConfig);
-            return newUser.save();
-          } else {
-            user.messages_count = 0;
-            user.rank = 0;
-            user.save();
-          }
-        }
-      );
+
+      const userSchemaConfig = {
+        id: `${message.author.id}#${message.guild.id}`,
+        name: message.author.username,
+        messages_count: 0,
+        rank: 0,
+        discordName: `${member.id}#${message.guild.id}`,
+      };
+
+      const userRef = firebase
+        .firestore()
+        .collection("users")
+        .doc(`${member.id}#${message.guild.id}`);
+
+      const user = await userRef.get();
+
+      if (!user.exists) {
+        userRef.set(userSchemaConfig);
+      }
     } else {
       message.member.roles.remove([
         ...message.member.guild.roles.cache.keyArray(),
       ]);
-      await userSchema.findOne(
-        {
-          id: `${message.author.id}#${message.guild.id}`,
-        },
-        (err, user) => {
-          if (err) console.log(err);
-          if (!user) {
-            if (message.author.id === client.user.id) return;
-            const newUser = new userSchema(userSchemaConfig);
-            return newUser.save();
-          } else {
-            user.messages_count = 0;
-            user.rank = 0;
-            user.save();
-          }
-        }
-      );
+
+      const userSchemaConfig = {
+        id: `${message.author.id}#${message.guild.id}`,
+        name: message.author.username,
+        messages_count: 0,
+        rank: 0,
+        discordName: `${message.author.username}#${message.author.discriminator}`,
+      };
+
+      const userRef = firebase
+        .firestore()
+        .collection("users")
+        .doc(`${message.author.id}#${message.guild.id}`);
+
+      const user = await userRef.get();
+
+      userRef.update({ messages_count: 0, rank: 0 });
+
+      if (!user.exists) {
+        userRef.set(userSchemaConfig);
+      }
     }
   }
+
   const embed = new Discord.MessageEmbed()
     .setAuthor(message.author.username)
     .setColor("#8966ff")

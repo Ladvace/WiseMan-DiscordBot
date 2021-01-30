@@ -1,5 +1,5 @@
-const { config } = require("../mongodb");
 const Discord = require("discord.js");
+const firebase = require("firebase");
 const Canvas = require("canvas");
 const path = require("path");
 const font = path.join(__dirname, "..", "assets", "Inter-Bold.ttf");
@@ -25,21 +25,12 @@ const applyText = (canvas, text) => {
 };
 
 module.exports = async (client, member) => {
-  const { welcomeMessage } = await config.findOne(
-    {
-      id: member.guild.id,
-    },
-    (err, server) => {
-      if (err) console.log(err);
-      if (!server) {
-        const newServer = new config(configSettings);
+  const users = firebase.firestore().collection("servers").doc(member.guild.id);
 
-        return newServer.save();
-      }
-    }
-  );
+  const user = await users.get();
+  const { welcomeMessage, welcomeTextMessage } = user.data();
 
-  const defaultMessage = `Welcome ${member.username}!`;
+  const defaultMessage = welcomeTextMessage || `Welcome ${member.username}!`;
 
   const image = path.join(__dirname, "..", "assets", "wallpaper.png");
 

@@ -1,118 +1,56 @@
 const Discord = require("discord.js");
-const { userSchema, config } = require("./mongodb");
+const firebase = require("firebase");
 
-const incrementRank = async (id, name, discriminator) => {
-  await userSchema.findOne(
-    {
-      id: id,
-    },
-    (err, user) => {
-      if (err) console.log(err);
-      if (!user) {
-        const newUser = new userSchema({
-          id: id,
-          name: name,
-          messages_count: 0,
-          rank: 0,
-          discordName: `${name}#${discriminator}`,
-        });
+const incrementRank = async (id) => {
+  const users = firebase.firestore().collection("users").doc(id);
 
-        return newUser.save();
-      } else {
-        console.log(
-          "incrementing rank:",
-          user.discordName,
-          user.rank,
-          user.rank + 1
-        );
-        user.rank = (user.rank ? user.rank : 0) + 1;
-        user.save();
-      }
-    }
-  );
+  const user = await users.get();
+
+  if (user.exists) {
+    firebase
+      .firestore()
+      .collection("users")
+      .doc(id)
+      .update({ rank: (user.data().rank && 0) + 1 });
+  }
 };
 
-const decrementRank = async (id, name, discriminator) => {
-  await userSchema.findOne(
-    {
-      id: id,
-    },
-    (err, user) => {
-      if (err) console.log(err);
-      if (!user) {
-        const newUser = new userSchema({
-          id: id,
-          name: name,
-          messages_count: 0,
-          rank: 0,
-          discordName: `${name}#${discriminator}`,
-        });
+const decrementRank = async (id) => {
+  const users = firebase.firestore().collection("users").doc(id);
 
-        return newUser.save();
-      } else {
-        console.log(
-          "decrement rank:",
-          user.discordName,
-          user.rank,
-          user.rank - 1
-        );
-        user.rank = user.rank === 0 ? 0 : user.rank - 1;
-        user.save();
-      }
-    }
-  );
+  const user = await users.get();
+
+  if (user.exists) {
+    firebase
+      .firestore()
+      .collection("users")
+      .doc(id)
+      .update({ rank: (user.data().rank && 0) - 1 });
+  }
 };
 
-const incrementMessages = async (id, name) => {
-  await userSchema.findOne(
-    {
-      id: id,
-    },
-    (err, user) => {
-      if (err) console.log(err);
-      if (!user) {
-        const newUser = new userSchema({
-          id: id,
-          name: name,
-          messages_count: 0,
-          rank: 0,
-        });
+const incrementMessages = async (id) => {
+  const users = firebase.firestore().collection("users").doc(id);
 
-        return newUser.save();
-      }
-      if (user) {
-        user.messages_count = user.messages_count + 1;
-        user.save();
-      }
-    }
-  );
+  const user = await users.get();
+
+  if (user.exists) {
+    firebase
+      .firestore()
+      .collection("users")
+      .doc(id)
+      .update({ messages_count: user.data().messages_count + 1 });
+  }
 };
 
 const levelUp = async (message, guildId, level, client) => {
   if (message.user.id === client.user.id) return;
   console.log("level up");
 
-  const channel = await config.findOne(
-    {
-      id: guildId,
-    },
-    (err, server) => {
-      if (err) console.log(err);
-      if (!server) {
-        const newServer = new config({
-          id: guildId,
-          guildPrefix: "!",
-          guildNotificationChannelID: null,
-          welcomeChannel: null,
-          customRanks: {},
-          rankTime: null,
-          defaultRole: null,
-        });
+  const users = firebase.firestore().collection("servers").doc(guildId);
 
-        return newServer.save();
-      }
-    }
-  );
+  const user = await users.get();
+  const channel = await user.data();
 
   const hasCustomRank = channel.customRanks.hasOwnProperty(level);
 
@@ -140,7 +78,7 @@ const levelUp = async (message, guildId, level, client) => {
         if (channel.guildNotificationChannelID)
           return notificationChannel.send(embed);
       })
-      .catch((e) => console.error("test", e));
+      .catch((e) => console.error("error", e));
   }
 };
 

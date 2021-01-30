@@ -10,6 +10,7 @@ module.exports.run = async (client, message) => {
     customRanks: {},
     rankTime: null,
     welcomeMessage: null,
+    welcomeTextMessage: null,
     defaultRole: null,
   };
 
@@ -22,8 +23,6 @@ module.exports.run = async (client, message) => {
 
   const server = await serverRef.get();
 
-  // const serverData = server.data();
-
   if (!server.exists) {
     serverRef.set(configSettings);
   }
@@ -34,7 +33,7 @@ module.exports.run = async (client, message) => {
     const embed = new Discord.MessageEmbed()
       .setTitle("Prefix")
       .setColor("#8966ff")
-      .setDescription(`welcome message resetted!`);
+      .setDescription(`text welcome message resetted!`);
 
     return message.channel.send(embed);
   }
@@ -44,7 +43,9 @@ module.exports.run = async (client, message) => {
   const embed = new Discord.MessageEmbed()
     .setTitle("Prefix")
     .setColor("#8966ff")
-    .setDescription(`welcome message setted to \`\`\`${welcomeMessage}\`\`\``);
+    .setDescription(
+      `text welcome message setted to \`\`\`${welcomeMessage}\`\`\``
+    );
 
   return message.channel.send(embed);
 };

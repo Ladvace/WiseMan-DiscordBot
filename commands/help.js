@@ -1,5 +1,5 @@
 const Discord = require("discord.js");
-const { config } = require("../mongodb");
+const firebase = require("firebase");
 
 exports.run = async (client, message) => {
   const configSettings = {
@@ -12,19 +12,18 @@ exports.run = async (client, message) => {
     defaultRole: null,
   };
 
-  const RemotePrefix = await config.findOne(
-    {
-      id: message.guild.id,
-    },
-    (err, server) => {
-      if (err) console.log(err);
-      if (!server) {
-        const newServer = new config(configSettings);
+  const users = firebase
+    .firestore()
+    .collection("servers")
+    .doc(message.guild.id);
 
-        return newServer.save();
-      }
-    }
-  );
+  const user = await users.get();
+
+  const RemotePrefix = user.data();
+
+  if (!user.exists) {
+    users.set(configSettings);
+  }
 
   const input = message.content;
   const pollHelp = input.includes("--poll");
