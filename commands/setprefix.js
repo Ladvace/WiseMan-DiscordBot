@@ -12,6 +12,7 @@ exports.run = async (client, message, args) => {
     welcomeChannel: null,
     customRanks: {},
     rankTime: null,
+    defaultRole: null,
   };
 
   if (isAdmin && args[0]?.length === 1) {

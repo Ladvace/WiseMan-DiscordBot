@@ -106,6 +106,7 @@ const levelUp = async (message, guildId, level, client) => {
           welcomeChannel: null,
           customRanks: {},
           rankTime: null,
+          defaultRole: null,
         });
 
         return newServer.save();

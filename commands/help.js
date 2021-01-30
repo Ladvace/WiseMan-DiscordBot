@@ -2,6 +2,16 @@ const Discord = require("discord.js");
 const { config } = require("../mongodb");
 
 exports.run = async (client, message) => {
+  const configSettings = {
+    id: message.guild.id,
+    guildPrefix: "!",
+    guildNotificationChannelID: null,
+    welcomeChannel: null,
+    customRanks: {},
+    rankTime: null,
+    defaultRole: null,
+  };
+
   const RemotePrefix = await config.findOne(
     {
       id: message.guild.id,

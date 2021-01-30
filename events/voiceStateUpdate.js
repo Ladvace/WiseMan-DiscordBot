@@ -40,9 +40,9 @@ module.exports = async (client, oldState, newState) => {
       client.config.intervals[newState.guild.id][newState.id] = setInterval(
         async () => {
           if (user) {
-            client.config.rankIncrementin24hCount[newState.guild.id][
-              newState.id
-            ] += 1;
+            // client.config.rankIncrementin24hCount[newState.guild.id][
+            //   newState.id
+            // ] += 1;
 
             await incrementRank(
               `${newState.id}#${newState.guild.id}`,

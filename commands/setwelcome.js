@@ -10,6 +10,7 @@ module.exports.run = async (client, message) => {
     customRanks: {},
     rankTime: null,
     welcomeMessage: null,
+    defaultRole: null,
   };
 
   const welcomeMessage = message.content.split(" ").slice(1).join(" ");

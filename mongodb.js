@@ -9,6 +9,7 @@ const config = new Schema({
   customRanks: { type: Object, default: {} },
   rankTime: Number,
   welcomeMessage: String,
+  defaultRole: String,
 });
 
 const userSchema = new Schema({

@@ -10,6 +10,7 @@ exports.run = async (client, message, args) => {
     welcomeChannel: null,
     customRanks: {},
     rankTime: null,
+    defaultRole: null,
   };
 
   const level = args[0];

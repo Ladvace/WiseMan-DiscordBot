@@ -18,6 +18,7 @@ module.exports = async (client, message) => {
     welcomeChannel: null,
     customRanks: {},
     rankTime: null,
+    defaultRole: null,
   };
 
   const RemotePrefix = await config.findOne(

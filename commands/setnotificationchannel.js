@@ -9,6 +9,7 @@ exports.run = async (client, message, args) => {
     welcomeChannel: null,
     customRanks: {},
     rankTime: null,
+    defaultRole: null,
   };
 
   const perms = message.member.permissions;

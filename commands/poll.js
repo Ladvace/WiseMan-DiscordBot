@@ -116,25 +116,32 @@ exports.run = async (client, message, args) => {
 
   const sumReducer = (accumulator, currentValue) => accumulator + currentValue;
   const scoreTest = (answer, questions) => {
+    console.log("scoreTest", answer, questions);
     let score = (answer / questions) * 100;
     return score;
   };
 
   setTimeout(() => {
-    Object.entries(client.config.pollAnswers[embedId]).map((x) => {
-      const sum = Object.values(client.config.pollAnswers[embedId]).reduce(
-        sumReducer
-      );
+    // embedMessage.reactions.cache.keys().map((x) => console.log("TRATA", c));
+    console.log(
+      "end poll",
+      embedMessage.reactions.cache.keys(),
+      // embedMessage.reactions.cache,
+      client.config.pollAnswers[embedId]
+    );
+    embedMessage.reactions.cache.map((x) => {
+      const sum = Object.values(embedMessage.reactions).reduce(sumReducer);
 
+      console.log("test", x, x[0], sum, Math.floor(scoreTest(x[1], sum)));
       client.config.poolSolution[x[0]] =
         sum > 0 ? Math.floor(scoreTest(x[1], sum)) : 0;
     });
 
-    const totalVotes = Object.values(client.config.pollAnswers[embedId]).filter(
+    const totalVotes = Object.values(embedMessage.reactions).filter(
       (vote) => vote !== 0
     ).length;
 
-    console.log("AAA", client.config.poolSolution);
+    console.log("AAA", client.config.poolSolution, totalVotes);
     const newEmbed = new Discord.MessageEmbed()
       .setColor("#8966FF")
       .setDescription(
@@ -145,7 +152,7 @@ exports.run = async (client, message, args) => {
           `
       )
       .addFields(
-        ...Object.entries(client.config.pollAnswers[embedId]).map((x, i) => {
+        ...Object.entries(embedMessage.reactions).map((x, i) => {
           return {
             name: `${optionValues[i]} : ${
               client.config.poolSolution[x[0]] || 0
@@ -159,7 +166,7 @@ exports.run = async (client, message, args) => {
       .setFooter("Ended", null);
     embedMessage.edit(":bar_chart: **POLL ENDED** :bar_chart:", newEmbed);
 
-    Object.keys(client.config.pollAnswers[embedId]).map((emoji) => {
+    Object.keys(embedMessage.reactions).map((emoji) => {
       embedMessage.reactions.cache.get(emoji)?.users.cache.map((userId) => {
         embedMessage.reactions.cache.get(emoji).users.remove(userId);
       });
