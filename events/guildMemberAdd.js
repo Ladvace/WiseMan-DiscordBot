@@ -30,7 +30,7 @@ module.exports = async (client, member) => {
   const user = await users.get();
   const { welcomeMessage, welcomeTextMessage } = user.data();
 
-  const defaultMessage = welcomeTextMessage || `Welcome ${member.username}!`;
+  const defaultMessage = `Welcome ${member.username}!`;
 
   const image = path.join(__dirname, "..", "assets", "wallpaper.png");
 
@@ -70,5 +70,8 @@ module.exports = async (client, member) => {
     "welcome-image.png"
   );
 
-  member.channel.send(`Welcome to the server, ${member.username}!`, attachment);
+  const defaultTextMessage =
+    welcomeTextMessage?.replace(/\[user]/g, member.username) ||
+    `Welcome to the server, ${member.username}`;
+  member.channel.send(defaultTextMessage, attachment);
 };
