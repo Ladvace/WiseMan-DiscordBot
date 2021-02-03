@@ -30,8 +30,6 @@ exports.run = async (client, message, args) => {
     serverRef.set(configSettings);
   }
 
-  console.log("setRank");
-
   if (roleName && level && Number.isInteger(parseInt(level, 10))) {
     serverRef.update({ [level]: roleId });
 

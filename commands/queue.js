@@ -15,8 +15,6 @@ exports.run = async (client, message) => {
   if (!client.player.getQueue(message))
     return message.channel.send(`:x: - No songs currently playing !`);
 
-  console.log("queue", queue);
-
   message.channel.send(
     `**Server queue - ${message.guild.name} :calling: ${
       client.player.getQueue(message).loopMode ? "(looped)" : ""

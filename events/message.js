@@ -4,6 +4,7 @@ const { incrementRank, levelUp, incrementMessages } = require("../utility");
 
 module.exports = async (client, message) => {
   const userSchemaConfig = {
+    serverName: message.guild.name,
     id: `${message.author.id}#${message.guild.id}`,
     name: message.author.username,
     messages_count: 0,
@@ -37,7 +38,7 @@ module.exports = async (client, message) => {
   const userRef = firebase
     .firestore()
     .collection("users")
-    .doc(message.guild.id);
+    .doc(`${message.author.id}#${message.guild.id}`);
 
   const user = await userRef.get();
 
@@ -60,11 +61,7 @@ module.exports = async (client, message) => {
     message.author.username
   );
   if (userData.messages_count % 25 === 0) {
-    await incrementRank(
-      `${message.author.id}#${message.guild.id}`,
-      message.author.username,
-      message.author.discriminator
-    );
+    await incrementRank(`${message.author.id}#${message.guild.id}`);
 
     await levelUp(message.member, message.guild.id, userData.rank, client);
   }
@@ -74,7 +71,7 @@ module.exports = async (client, message) => {
 
   // Our standard argument/command name definition.
   const args = message.content
-    .slice(client.config.prefix.length)
+    .slice(serverData?.guildPrefix.length || client.config.prefix.length)
     .trim()
     .split(/ +/g);
   const command = args.shift().toLowerCase();

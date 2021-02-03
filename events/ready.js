@@ -18,51 +18,37 @@ module.exports = async (client) => {
   const millisPastTheHour = Date.now() % millisPerHour;
   const millisToTheHour = millisPerHour - millisPastTheHour;
 
-  // const firebaseConfig = {
-  //   apiKey: process.env.apiKey,
-  //   authDomain: process.env.authDomain,
-  //   databaseURL: process.env.databaseURL,
-  //   projectId: process.env.projectId,
-  //   storageBucket: process.env.storageBucket,
-  //   messagingSenderId: process.env.messagingSenderId,
-  //   appId: process.env.appId,
-  //   measurementId: process.env.measurementId,
-  // };
-
-  // if (firebase.apps.length === 0) firebase.initializeApp(firebaseConfig);
+  client.config.serverSettings = {};
 
   client.guilds.cache.keyArray().map(async (x) => {
+    const configSettings = {
+      id: x,
+      guildPrefix: "!",
+      guildNotificationChannelID: null,
+      welcomeChannel: null,
+      customRanks: {},
+      rankTime: null,
+      defaultRole: null,
+    };
+
     const serverRef = firebase.firestore().collection("servers").doc(x);
 
     const server = await serverRef.get();
 
     if (!server.exists) {
-      firebase.firestore().collection("servers").doc(x).set({
-        id: x,
-        guildPrefix: "!",
-        guildNotificationChannelID: null,
-        welcomeChannel: null,
-        customRanks: {},
-        rankTime: null,
-        defaultRole: null,
-      });
+      firebase.firestore().collection("servers").doc(x).set(configSettings);
     }
 
-    // firebase.firestore().collection("servers").doc(x).set({
-    //   id: x,
-    //   guildPrefix: "!",
-    //   guildNotificationChannelID: null,
-    //   welcomeChannel: null,
-    //   customRanks: {},
-    //   rankTime: null,
-    //   defaultRole: null,
-    // });
+    // const RemotePrefix = server.data();
+
+    client.config.serverSettings[x] = server.data();
   });
 
   client.channels.cache.map((x) => {
     if (x.type === "voice") {
       x.members.map(async (y) => {
         const userSchemaConfig = {
+          serverName: x.guild.name,
           id: `${y.user.id}#${x.guild.id}`,
           name: y.user.username,
           messages_count: 0,

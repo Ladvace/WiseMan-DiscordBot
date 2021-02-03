@@ -27,6 +27,8 @@ exports.run = async (client, message, args) => {
       serverRef.set(configSettings);
     }
 
+    client.config.serverSettings[message.guild.id] = server.data();
+
     if (server) {
       serverRef.update({ guildPrefix: args[0].trim() });
 

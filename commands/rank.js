@@ -3,6 +3,7 @@ const firebase = require("firebase");
 
 exports.run = async (client, message) => {
   const userSchemaConfig = {
+    serverName: message.guild.name,
     id: `${message.author.id}#${message.guild.id}`,
     name: message.author.username,
     messages_count: 0,

@@ -2,37 +2,29 @@ const Discord = require("discord.js");
 const firebase = require("firebase");
 
 const incrementRank = async (id) => {
-  const users = firebase.firestore().collection("users").doc(id);
+  const userRef = firebase.firestore().collection("users").doc(id);
 
-  const user = await users.get();
+  const user = await userRef.get();
 
   if (user.exists) {
-    firebase
-      .firestore()
-      .collection("users")
-      .doc(id)
-      .update({ rank: (user.data().rank && 0) + 1 });
+    userRef.update({ rank: (user.data().rank && 0) + 1 });
   }
 };
 
 const decrementRank = async (id) => {
-  const users = firebase.firestore().collection("users").doc(id);
+  const userRef = firebase.firestore().collection("users").doc(id);
 
-  const user = await users.get();
+  const user = await userRef.get();
 
   if (user.exists) {
-    firebase
-      .firestore()
-      .collection("users")
-      .doc(id)
-      .update({ rank: (user.data().rank && 0) - 1 });
+    userRef.update({ rank: (user.data().rank && 0) - 1 });
   }
 };
 
 const incrementMessages = async (id) => {
-  const users = firebase.firestore().collection("users").doc(id);
+  const userRef = firebase.firestore().collection("users").doc(id);
 
-  const user = await users.get();
+  const user = await userRef.get();
 
   if (user.exists) {
     firebase
@@ -45,14 +37,13 @@ const incrementMessages = async (id) => {
 
 const levelUp = async (message, guildId, level, client) => {
   if (message.user.id === client.user.id) return;
-  console.log("level up");
 
-  const users = firebase.firestore().collection("servers").doc(guildId);
+  const serverRef = firebase.firestore().collection("servers").doc(guildId);
 
-  const user = await users.get();
-  const channel = await user.data();
+  const server = await serverRef.get();
+  const serverSettings = await server.data();
 
-  const hasCustomRank = channel.customRanks.hasOwnProperty(level);
+  const hasCustomRank = serverSettings.customRanks.hasOwnProperty(level);
 
   const embed = new Discord.MessageEmbed()
     .setAuthor(message.user.username)
@@ -61,21 +52,18 @@ const levelUp = async (message, guildId, level, client) => {
     .addField("Rank", `${level}`);
 
   const notificationChannel = client.channels.cache.get(
-    channel.guildNotificationChannelID
+    serverSettings.guildNotificationChannelID
   );
 
-  const customRankId = channel.customRanks[level];
+  const customRankId = serverSettings.customRanks[level];
   const roleExist = message.guild.roles.cache.has(customRankId);
   if (hasCustomRank && roleExist) {
     const customRole = message.guild.roles.cache.get(customRankId);
 
-    console.log("customRole", customRole);
-
     message.roles
       .add(customRole)
       .then(() => {
-        console.log("guildNotificationChannelID", notificationChannel);
-        if (channel.guildNotificationChannelID)
+        if (serverSettings.guildNotificationChannelID)
           return notificationChannel.send(embed);
       })
       .catch((e) => console.error("error", e));

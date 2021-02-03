@@ -10,7 +10,6 @@ const { Player } = require("discord-player");
 client.player = new Player(client);
 
 const firebase = require("firebase");
-const mongoose = require("mongoose");
 const fs = require("fs");
 // const tmi = require("tmi.js");
 const Enmap = require("enmap");
@@ -29,6 +28,7 @@ const firebaseConfig = {
 if (firebase.apps.length === 0) firebase.initializeApp(firebaseConfig);
 
 client.config = localConfig;
+client.logger = require("./modules/Logger");
 
 client.player.on("trackStart", (message, track) => {
   message.channel.send({
@@ -58,18 +58,6 @@ client.player.on("trackStart", (message, track) => {
   });
 });
 
-mongoose.connect(
-  "mongodb://localhost:27017/wiseManBot",
-  { useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true },
-  (err) => {
-    if (err) {
-      console.log(err);
-      return process.exit(22);
-    }
-    console.log("Connected to the db");
-  }
-);
-
 fs.readdir("./events/", (err, files) => {
   if (err) return console.error(err);
   files.forEach((file) => {
@@ -98,7 +86,7 @@ fs.readdir("./commands/", (err, files) => {
     let props = require(`./commands/${file}`);
     // Get just the command name from the file name
     let commandName = file.split(".")[0];
-    console.log(`Attempting to load command ${commandName}`);
+    client.logger.log(`Attempting to load command ${commandName}`);
     // Here we simply store the whole thing in the command Enmap. We're not running it right now.
     client.commands.set(commandName, props);
   });

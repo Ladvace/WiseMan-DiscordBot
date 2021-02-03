@@ -4,8 +4,6 @@ const Canvas = require("canvas");
 const path = require("path");
 const font = path.join(__dirname, "..", "assets", "Inter-Bold.ttf");
 
-// console.log("ttt", path.join(__dirname, "..", "assets", "Inter-Bold.ttf"));
-
 Canvas.registerFont(font, { family: "Inter V", weight: "Bold" });
 
 const applyText = (canvas, text) => {

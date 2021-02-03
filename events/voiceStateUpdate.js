@@ -8,9 +8,10 @@ module.exports = async (client, oldState, newState) => {
   const millisToTheHour = millisPerHour - millisPastTheHour;
 
   if (newState.channelID && !oldState.channelID) {
-    console.log("Someone joined");
+    client.logger.log("Someone joined");
 
     const userSchemaConfig = {
+      serverName: newState.guild.name,
       id: `${newState.id}#${newState.guild.id}`,
       name: newState.member.user.username,
       messages_count: 0,
@@ -54,14 +55,14 @@ module.exports = async (client, oldState, newState) => {
       );
     }, millisToTheHour);
   } else if (oldState.channelID && !newState.channelID) {
-    console.log("Someone left");
+    client.logger.log("Someone left");
 
     try {
       if (
         client.config.timers[newState.guild.id][newState.id] &&
         client.config.intervals[newState.guild.id][newState.id]
       ) {
-        console.log("clear");
+        client.logger.log("clear");
         clearTimeout(client.config.timers[oldState.guild.id][newState.id]);
         clearInterval(client.config.intervals[oldState.guild.id][newState.id]);
       }
