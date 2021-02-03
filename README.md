@@ -1,5 +1,5 @@
 <p align="center">
-    <img width="300" height="auto" src="https://i.imgur.com/WpPGFXt.png" alt="WiseMan" />
+    <img width="300" height="auto" src="https://i.imgur.com/yCFscwQ.png" alt="WiseMan" />
 </p>
 
 ## WiseMan - Discord Bot 🤖
