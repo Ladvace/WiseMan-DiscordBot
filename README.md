@@ -24,6 +24,8 @@ You need to add the prefix `!` before the command e.g: `!rank`.
 - **setNotificationChannel** - It allows you to set a new text channel where the notification will be sent.
 - **setRank** - It allows you to set a custom role for each level.
 
+**and much more...**
+
 ## Steps ▶️
 
 Install the dependencies
@@ -45,6 +47,9 @@ Start the bot
 $ npm start
 ```
 
+> *The repo has 2 versions (two branch) the ```master``` rely on **firebase** and ```mongodbVersion``` that rely on **mongodb**, follow the right configuration based on the database you use.
+> the master is the branch supported, mongodb be in the future could be outdated and not supported anymore*
+
 ## Configuration ⚙️
 
 - The only configurations are the prefix and the minutes in the `config.json`.
@@ -57,6 +62,23 @@ $ npm start
    "minutes": 60
 }
 ```
+
+### Firebase 🔥
+
+Create a firebase account and insert into `.ENV` the following data
+
+```
+apiKey="APITOKEN"
+authDomain="AUTHDOMAIN
+databaseURL="DATABASEURL"
+projectId="PROJECTID"
+storageBucket="STORAGEBUCKET"
+messagingSenderId="MESSAGESENDERID"
+appId="APPID"
+measurementId="MEASUREMENTID" // this should be optional
+```
+
+
 ## Support 💰
 
 - if you want to support the me and the discord development consider voting the bot [here](https://top.gg/bot/589693244456042497) and
