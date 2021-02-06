@@ -79,9 +79,13 @@ measurementId="MEASUREMENTID" // this should be optional
 ```
 
 
-## Support 💰
+## Support 💻
 
-- if you want to support the me and the discord development consider voting the bot [here](https://top.gg/bot/589693244456042497) and
+If you want to be an active contributor join the discord server [here](https://discord.gg/fnmKKWPWpB) 
+
+## Donation 💰
+
+- If you want to support the me and the discord development consider voting the bot [here](https://top.gg/bot/589693244456042497) and
 donating:
 
 
@@ -90,7 +94,6 @@ donating:
 or 
 
 [Donate](https://ko-fi.com/ladvace)
-
 
 
 
