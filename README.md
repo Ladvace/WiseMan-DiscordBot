@@ -6,6 +6,8 @@
 
 [![forthebadge](https://forthebadge.com/images/badges/gluten-free.svg)](https://forthebadge.com) [![forthebadge](https://forthebadge.com/images/badges/made-with-crayons.svg)](https://forthebadge.com) [![forthebadge](https://forthebadge.com/images/badges/made-with-javascript.svg)](https://forthebadge.com) [![forthebadge](https://forthebadge.com/images/badges/built-with-love.svg)](https://forthebadge.com)
 
+⚠️ **I don't have so much time to maintain this project, if anyone is insterested in helping mantaining/developing this project feel free to open an issue or contacting me**
+
 This bot allows you to level up based on the time you spend in a vocal channel and how much you write in a text channel
 
 **If you don't need/want to host and set it up on your own you can add your bot to your server clicking here:
