@@ -6,7 +6,7 @@ const config = new Schema({
   guildPrefix: String,
   guildNotificationChannelID: String,
   welcomeChannel: String,
-  customRanks: { type: Object, default: {} },
+  customRanks: Map,
   rankTime: Number,
   welcomeMessage: String,
   defaultRole: String,
@@ -17,6 +17,8 @@ const userSchema = new Schema({
   name: String,
   messages_count: Number,
   rank: Number,
+  hours: Number,
+  lastRankTime: Date,
   discordName: String,
 });
 

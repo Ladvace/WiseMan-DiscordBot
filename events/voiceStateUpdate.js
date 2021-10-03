@@ -1,95 +1,109 @@
 const { userSchema } = require("../mongodb");
-const { incrementRank, levelUp } = require("../utility");
 const localConfig = require("../config.json");
+const logger = require("../modules/logger");
+const { assignRankRole } = require("../utility");
 
 module.exports = async (client, oldState, newState) => {
-  const millisPerHour = 60 * localConfig.minutes * 1000; //1h
-  const millisPastTheHour = Date.now() % millisPerHour;
-  const millisToTheHour = millisPerHour - millisPastTheHour;
-
-  if (newState.channelID && !oldState.channelID) {
-    console.log("Someone joined");
+  if (newState.channel?.id && !oldState.channel?.id) {
+    const now = new Date();
 
     const userSchemaConfig = {
-      id: `${newState.id}#${newState.guild.id}`,
-      name: newState.member.user.username,
+      id: `${newState.member.user.id}#${newState.guild.id}`,
+      name: oldState.member.user.username,
       messages_count: 0,
       rank: 0,
+      hours: 0,
+      lastRankTime: now.getTime(),
       discordName: `${newState.member.user.username}#${newState.member.user.discriminator}`,
     };
 
-    const user = await userSchema.findOne(
+    console.log("aa", newState.member.user.id, newState.id);
+
+    userSchema.findOne(
       {
-        id: `${newState.id}#${newState.guild.id}`,
+        id: `${newState.member.user.id}#${newState.guild.id}`,
       },
       (err, user) => {
         if (err) console.log(err);
         if (!user) {
-          if (newState.id === client.user.id) return;
           const newUser = new userSchema(userSchemaConfig);
 
           return newUser.save();
+        } else {
+          const rank = user.rank;
+
+          console.log("RANK", rank);
+          // check for the rank and add a role (default or custom )
+          assignRankRole(newState, client, rank);
+
+          user.save();
         }
       }
     );
 
-    client.config.timers[newState.guild.id] = {};
-    client.config.intervals[newState.guild.id] = {};
+    logger.log("Someone joined");
 
-    client.config.timers[newState.guild.id][newState.id] = setTimeout(() => {
-      client.config.intervals[newState.guild.id][newState.id] = setInterval(
-        async () => {
-          if (user) {
-            // client.config.rankIncrementin24hCount[newState.guild.id][
-            //   newState.id
-            // ] += 1;
+    client.container.users[newState.member.user.id] = {
+      start: now.getTime(),
+    };
+  } else if (oldState.channel?.id && !newState.channel?.id) {
+    logger.log("Someone left");
 
-            await incrementRank(
-              `${newState.id}#${newState.guild.id}`,
-              newState.member.user.username,
-              newState.member.user.discriminator
-            );
+    const startTimestamp =
+      client.container.users[oldState.member.user.id]?.start;
+    const now = new Date();
 
-            const user1 = await userSchema.findOne(
-              {
-                id: `${newState.id}#${newState.guild.id}`,
-              },
-              (err, user) => {
-                if (err) console.log(err);
-                if (!user) {
-                  if (newState.id === client.user.id) return;
-                  const newUser = new userSchema(userSchemaConfig);
+    const difference = now.getTime() - startTimestamp;
+    const msToSec = difference / 1000;
+    const minutes = Math.floor(msToSec / 60);
+    const hours = Math.floor(minutes / 60);
 
-                  return newUser.save();
-                }
-              }
-            );
+    // const userSchemaConfig = {
+    //   id: `${oldState.id}#${oldState.guild.id}`,
+    //   name: oldState.member.user.username,
+    //   messages_count: 0,
+    //   rank: 0,
+    //   hours: hours,
+    //   lastRankTime: now.getTime(),
+    //   discordName: `${oldState.member.user.username}#${oldState.member.user.discriminator}`,
+    // };
 
-            await levelUp(
-              newState.member,
-              newState.guild.id,
-              user1.rank,
-              client
-            );
-          }
+    console.log(
+      "TTT",
+      difference,
+      msToSec,
+      minutes,
+      !Number.isNaN(minutes),
+      !Number.isNaN(hours)
+    );
+    if (!Number.isNaN(minutes)) {
+      userSchema.findOne(
+        {
+          id: `${oldState.id}#${oldState.guild.id}`,
         },
-        millisPerHour
-      );
-    }, millisToTheHour);
-  } else if (oldState.channelID && !newState.channelID) {
-    console.log("Someone left");
+        (err, user) => {
+          if (err) console.log(err);
+          // if (!user) {
+          //   const newUser = new userSchema(userSchemaConfig);
 
-    try {
-      if (
-        client.config.timers[newState.guild.id][newState.id] &&
-        client.config.intervals[newState.guild.id][newState.id]
-      ) {
-        console.log("clear");
-        clearTimeout(client.config.timers[oldState.guild.id][newState.id]);
-        clearInterval(client.config.intervals[oldState.guild.id][newState.id]);
-      }
-    } catch (e) {
-      console.error(e);
+          //   return newUser.save();
+          // } else {
+          const diff = user.lastRankTime - Date.now();
+          const lastRankTimeSecs = diff / 1000;
+          const lastRankTimeMinutes = Math.floor(lastRankTimeSecs / 60);
+          const lastRankTimeHours = Math.floor(lastRankTimeMinutes / 60);
+
+          const lessThan48Hours = lastRankTimeHours > 48;
+
+          const rank = lessThan48Hours ? Math.floor(minutes / 2) : minutes;
+
+          console.log("TEST", lessThan48Hours, rank);
+
+          user.rank = (user.rank ? user.rank : 0) + rank;
+          user.save();
+          // }
+        }
+      );
     }
   }
 };
