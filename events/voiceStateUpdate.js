@@ -1,10 +1,10 @@
 const { userSchema } = require("../mongodb");
-const localConfig = require("../config.json");
 const logger = require("../modules/logger");
 const { assignRankRole } = require("../utility");
 
 module.exports = async (client, oldState, newState) => {
   if (newState.channel?.id && !oldState.channel?.id) {
+    logger.log("Someone joined");
     const now = new Date();
 
     const userSchemaConfig = {
@@ -17,8 +17,6 @@ module.exports = async (client, oldState, newState) => {
       discordName: `${newState.member.user.username}#${newState.member.user.discriminator}`,
     };
 
-    console.log("aa", newState.member.user.id, newState.id);
-
     userSchema.findOne(
       {
         id: `${newState.member.user.id}#${newState.guild.id}`,
@@ -30,9 +28,17 @@ module.exports = async (client, oldState, newState) => {
 
           return newUser.save();
         } else {
+          const diff = user.lastRankTime - Date.now();
+          const lastRankTimeSecs = diff / 1000;
+          const lastRankTimeMinutes = Math.floor(lastRankTimeSecs / 60);
+          const lastRankTimeHours = Math.floor(lastRankTimeMinutes / 60);
+
+          const lessThan48Hours = lastRankTimeHours > 48;
+
+          // const rank = lessThan48Hours ? Math.floor(minutes / 2) : minutes;
+          if (lessThan48Hours && user.rank) user.rank = user.rank - 10;
           const rank = user.rank;
 
-          console.log("RANK", rank);
           // check for the rank and add a role (default or custom )
           assignRankRole(newState, client, rank);
 
@@ -40,8 +46,6 @@ module.exports = async (client, oldState, newState) => {
         }
       }
     );
-
-    logger.log("Someone joined");
 
     client.container.users[newState.member.user.id] = {
       start: now.getTime(),
@@ -56,26 +60,8 @@ module.exports = async (client, oldState, newState) => {
     const difference = now.getTime() - startTimestamp;
     const msToSec = difference / 1000;
     const minutes = Math.floor(msToSec / 60);
-    const hours = Math.floor(minutes / 60);
+    // const hours = Math.floor(minutes / 60);
 
-    // const userSchemaConfig = {
-    //   id: `${oldState.id}#${oldState.guild.id}`,
-    //   name: oldState.member.user.username,
-    //   messages_count: 0,
-    //   rank: 0,
-    //   hours: hours,
-    //   lastRankTime: now.getTime(),
-    //   discordName: `${oldState.member.user.username}#${oldState.member.user.discriminator}`,
-    // };
-
-    console.log(
-      "TTT",
-      difference,
-      msToSec,
-      minutes,
-      !Number.isNaN(minutes),
-      !Number.isNaN(hours)
-    );
     if (!Number.isNaN(minutes)) {
       userSchema.findOne(
         {
@@ -83,25 +69,21 @@ module.exports = async (client, oldState, newState) => {
         },
         (err, user) => {
           if (err) console.log(err);
-          // if (!user) {
-          //   const newUser = new userSchema(userSchemaConfig);
 
-          //   return newUser.save();
-          // } else {
-          const diff = user.lastRankTime - Date.now();
-          const lastRankTimeSecs = diff / 1000;
-          const lastRankTimeMinutes = Math.floor(lastRankTimeSecs / 60);
-          const lastRankTimeHours = Math.floor(lastRankTimeMinutes / 60);
+          if (user) {
+            const diff = user.lastRankTime - Date.now();
+            const lastRankTimeSecs = diff / 1000;
+            const lastRankTimeMinutes = Math.floor(lastRankTimeSecs / 60);
+            const lastRankTimeHours = Math.floor(lastRankTimeMinutes / 60);
 
-          const lessThan48Hours = lastRankTimeHours > 48;
+            const lessThan48Hours = lastRankTimeHours > 48;
 
-          const rank = lessThan48Hours ? Math.floor(minutes / 2) : minutes;
+            const rank = lessThan48Hours ? Math.floor(minutes / 2) : minutes;
 
-          console.log("TEST", lessThan48Hours, rank);
-
-          user.rank = (user.rank ? user.rank : 0) + rank;
-          user.save();
-          // }
+            user.rank = (user.rank ? user.rank : 0) + rank;
+            user.lastRankTime = now.getTime();
+            user.save();
+          }
         }
       );
     }

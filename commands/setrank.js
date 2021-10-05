@@ -3,54 +3,22 @@ const { config } = require("../mongodb");
 const { prefix } = require("../config.json");
 
 exports.run = async (client, message, args) => {
-  const configSettings = {
-    id: message.guild.id,
-    guildPrefix: "!",
-    guildNotificationChannelID: null,
-    welcomeChannel: null,
-    customRanks: {},
-    rankTime: null,
-    defaultRole: null,
-  };
-
   const level = args[0];
   const roleId = args[1];
 
   const roleName = message.guild.roles.cache.get(roleId)?.name;
 
-  const RemotePrefix = await config.findOne(
-    {
-      id: message.guild.id,
-    },
-    (err, server) => {
-      if (err) console.log(err);
-      if (!server) {
-        const newServer = new config(configSettings);
-
-        return newServer.save();
-      }
-    }
-  );
+  const server = await config.findOne({
+    id: message.guild.id,
+  });
 
   console.log("setRank");
 
   if (roleName && level && Number.isInteger(parseInt(level, 10))) {
-    await config.findOne(
-      {
-        id: message.guild.id,
-      },
-      (err, server) => {
-        if (err) console.log(err);
-        if (!server) {
-          const newServer = new config(configSettings);
-
-          return newServer.save();
-        } else {
-          server.customRanks = { ...server.customRanks, [level]: roleId };
-          return server.save();
-        }
-      }
-    );
+    if (server) {
+      server.customRanks = { ...server.customRanks, [level]: roleId };
+      return server.save();
+    }
 
     const embed = new Discord.MessageEmbed()
       .setTitle("Custom Rank")
@@ -66,7 +34,7 @@ exports.run = async (client, message, args) => {
       .addField(
         "Example:",
         `\`\`\`${
-          RemotePrefix.guildPrefix || prefix
+          server.guildPrefix || prefix
         }setrank 7 760437474157522452\`\`\``
       );
 

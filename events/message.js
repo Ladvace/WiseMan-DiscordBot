@@ -6,87 +6,69 @@ module.exports = async (client, message) => {
   const userSchemaConfig = {
     id: `${message.author.id}#${message.guild.id}`,
     name: message.author.username,
-    messages_count: 0,
-    rank: 0,
     discordName: `${message.author.username}#${message.author.discriminator}`,
   };
 
   const configSettings = {
     id: message.guild.id,
-    guildPrefix: "!",
-    guildNotificationChannelID: null,
-    welcomeChannel: null,
-    customRanks: {},
-    rankTime: null,
-    defaultRole: null,
   };
 
-  const RemotePrefix = await config.findOne(
-    {
-      id: message.guild.id,
-    },
-    (err, server) => {
-      if (err) console.log(err);
-      if (!server) {
-        const newServer = new config(configSettings);
+  const server = await config.findOne({
+    id: message.guild.id,
+  });
 
-        return newServer.save();
-      }
-    }
-  );
+  if (!server) {
+    const newServer = new config(configSettings);
+    await newServer.save();
+  }
 
-  const user = await userSchema.findOne(
-    {
-      id: `${message.author.id}#${message.guild.id}`,
-    },
-    (err, user) => {
-      if (err) console.log(err);
-      if (!user) {
-        const newUser = new userSchema(userSchemaConfig);
+  const user = await userSchema.findOne({
+    id: `${message.author.id}#${message.guild.id}`,
+  });
 
-        return newUser.save();
-      }
-    }
-  );
+  if (!user) {
+    const newUser = new userSchema(userSchemaConfig);
+    await newUser.save();
+  }
 
   client.config.prefix =
-    RemotePrefix?.guildPrefix !== localConfig.prefix
-      ? RemotePrefix?.guildPrefix
+    server?.guildPrefix !== localConfig.prefix
+      ? server?.guildPrefix
       : localConfig.prefix;
 
   // Ignore all bots
   if (message.author.bot) return;
 
   if (user) {
-    await incrementMessages(
-      `${message.author.id}#${message.guild.id}`,
-      message.author.username
-    );
+    await incrementMessages(user);
     if (user.messages_count % 25 === 0) {
-      await incrementRank(
-        `${message.author.id}#${message.guild.id}`,
-        message.author.username,
-        message.author.discriminator
-      );
+      await incrementRank(user);
 
-      await levelUp(message.member, message.guild.id, user.rank, client);
+      // await levelUp(message.member, message.guild.id, user.rank, client);
     }
   }
 
-  // Ignore messages not starting with the prefix (in config.json)
-  if (message.content.indexOf(client.config.prefix) !== 0) return;
+  // // Ignore messages not starting with the prefix (in config.json)
+  // if (message.content.indexOf(client.config.prefix) !== 0) return;
 
-  // Our standard argument/command name definition.
+  const prefixMention = new RegExp(`^<@!?${client.user.id}> ?$`);
+  if (message.content.match(prefixMention)) {
+    return message.reply(
+      `My prefix on this guild is \`${client.config.prefix}\``
+    );
+  }
+
+  // // Our standard argument/command name definition.
   const args = message.content
     .slice(client.config.prefix.length)
     .trim()
     .split(/ +/g);
   const command = args.shift().toLowerCase();
 
-  console.log("command", client.config.prefix, command, args);
+  // console.log("command", client.config.prefix, command, args);
 
   // Grab the command data from the client.commands Enmap
-  const cmd = client.commands.get(command);
+  const cmd = client.container.commands.get(command);
 
   // If that command doesn't exist, silently exit and do nothing
   if (!cmd) return;

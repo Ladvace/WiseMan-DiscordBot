@@ -7,28 +7,16 @@ exports.run = async (client, message) => {
   const perms = message.member.permissions;
   const isAdmin = perms.has("ADMINISTRATOR");
 
-  const userSchemaConfig = {
-    id: `${message.author.id}#${message.guild.id}`,
-    name: message.author.username,
-    messages_count: 0,
-    rank: 0,
-    discordName: `${message.author.username}#${message.author.discriminator}`,
-  };
-
   if (isAdmin) {
     if (member) {
       member.roles.remove([...member.guild.roles.cache.keyArray()]);
-      await userSchema.findOne(
+      userSchema.findOne(
         {
           id: `${member.id}#${message.guild.id}`,
         },
         (err, user) => {
           if (err) console.log(err);
-          if (!user) {
-            if (member.id === client.user.id) return;
-            const newUser = new userSchema(userSchemaConfig);
-            return newUser.save();
-          } else {
+          if (user) {
             user.messages_count = 0;
             user.rank = 0;
             user.save();
@@ -45,11 +33,7 @@ exports.run = async (client, message) => {
         },
         (err, user) => {
           if (err) console.log(err);
-          if (!user) {
-            if (message.author.id === client.user.id) return;
-            const newUser = new userSchema(userSchemaConfig);
-            return newUser.save();
-          } else {
+          if (user) {
             user.messages_count = 0;
             user.rank = 0;
             user.save();
@@ -63,5 +47,6 @@ exports.run = async (client, message) => {
     .setColor("#8966ff")
     .setThumbnail(message.author.avatarURL({ format: "png" }))
     .setDescription("***Your rank has been reset!***");
-  return message.channel.send(embed);
+
+  return message.channel.send({ embeds: [embed] });
 };

@@ -2,32 +2,18 @@ const Discord = require("discord.js");
 const { config } = require("../mongodb");
 
 exports.run = async (client, message, args) => {
-  const configSettings = {
-    id: message.guild.id,
-    guildPrefix: "!",
-    guildNotificationChannelID: null,
-    welcomeChannel: null,
-    customRanks: {},
-    rankTime: null,
-    defaultRole: null,
-  };
-
   const perms = message.member.permissions;
   const isAdmin = perms.has("ADMINISTRATOR");
 
   const channelId = args[0];
 
   if (isAdmin) {
-    await config.findOne(
+    config.findOne(
       {
         id: message.guild.id,
       },
       (err, server) => {
         if (err) console.log(err);
-        if (!server) {
-          const newServer = new config(configSettings);
-          return newServer.save();
-        }
         if (server) {
           const channelName = client.channels.cache.get(channelId)?.name;
 
@@ -38,7 +24,7 @@ exports.run = async (client, message, args) => {
               .setColor("#8966ff")
               .addField("Notification channel:", `${channelName}`);
 
-            return message.channel.send(embed);
+            return message.channel.send({ embeds: [embed] });
           } else {
             const isNull = channelId == "null";
 
@@ -51,7 +37,7 @@ exports.run = async (client, message, args) => {
               .setColor("#8966ff")
               .addField("Error", `Id not valid`);
 
-            return message.channel.send(embed);
+            return message.channel.send({ embeds: [embed] });
           }
         }
       }

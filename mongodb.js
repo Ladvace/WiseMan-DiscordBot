@@ -3,11 +3,11 @@ const Schema = mongoose.Schema;
 
 const config = new Schema({
   id: { type: String, required: true, unique: true },
-  guildPrefix: String,
+  guildPrefix: { type: String, default: "!" },
   guildNotificationChannelID: String,
   welcomeChannel: String,
   customRanks: Map,
-  rankTime: Number,
+  rankTime: { type: Number, default: 0 },
   welcomeMessage: String,
   defaultRole: String,
 });
@@ -15,9 +15,9 @@ const config = new Schema({
 const userSchema = new Schema({
   id: { type: String, required: true, unique: true },
   name: String,
-  messages_count: Number,
-  rank: Number,
-  hours: Number,
+  messages_count: { type: Number, default: 0 },
+  rank: { type: Number, default: 0 },
+  hours: { type: Number, default: 0 },
   lastRankTime: Date,
   discordName: String,
 });

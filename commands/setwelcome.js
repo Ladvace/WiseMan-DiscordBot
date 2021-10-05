@@ -2,30 +2,14 @@ const Discord = require("discord.js");
 const { config } = require("../mongodb");
 
 module.exports.run = async (client, message) => {
-  const configSettings = {
-    id: message.guild.id,
-    guildPrefix: "!",
-    guildNotificationChannelID: null,
-    welcomeChannel: null,
-    customRanks: {},
-    rankTime: null,
-    welcomeMessage: null,
-    defaultRole: null,
-  };
-
   const welcomeMessage = message.content.split(" ").slice(1).join(" ");
 
-  await config.findOne(
+  config.findOne(
     {
       id: message.guild.id,
     },
     (err, server) => {
       if (err) console.log(err);
-      if (!server) {
-        const newServer = new config(configSettings);
-
-        return newServer.save();
-      }
 
       if (server) {
         if (welcomeMessage === "null") {
@@ -36,7 +20,7 @@ module.exports.run = async (client, message) => {
             .setColor("#8966ff")
             .setDescription(`welcome message resetted!`);
 
-          return message.channel.send(embed);
+          return message.channel.send({ embeds: [embed] });
         }
         server.welcomeMessage = welcomeMessage;
         server.save();
@@ -48,7 +32,7 @@ module.exports.run = async (client, message) => {
             `welcome message setted to \`\`\`${welcomeMessage}\`\`\``
           );
 
-        return message.channel.send(embed);
+        return message.channel.send({ embeds: [embed] });
       }
     }
   );
