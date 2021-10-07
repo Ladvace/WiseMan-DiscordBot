@@ -25,19 +25,11 @@ const applyText = (canvas, text) => {
 };
 
 module.exports = async (client, member) => {
-  const { welcomeMessage } = await config.findOne(
-    {
-      id: member.guild.id,
-    },
-    (err, server) => {
-      if (err) console.log(err);
-      if (!server) {
-        const newServer = new config(configSettings);
+  const server = await config.findOne({
+    id: member.guild.id,
+  });
 
-        return newServer.save();
-      }
-    }
-  );
+  if (!server) return;
 
   const defaultMessage = `Welcome ${member.username}!`;
 
@@ -54,12 +46,12 @@ module.exports = async (client, member) => {
 
   ctx.font = applyText(
     canvas,
-    welcomeMessage.replace(/\[user]/g, member.username) || defaultMessage
+    server.welcomeMessage.replace(/\[user]/g, member.username) || defaultMessage
   );
 
   ctx.fillStyle = "#FFFF";
   ctx.fillText(
-    welcomeMessage.replace(/\[user]/g, member.username) || defaultMessage,
+    server.welcomeMessage.replace(/\[user]/g, member.username) || defaultMessage,
     canvas.width / 2.5,
     canvas.height / 1.8
   );
