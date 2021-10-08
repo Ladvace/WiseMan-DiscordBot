@@ -36,34 +36,6 @@ client.container = {
 
 client.config = localConfig;
 
-// client.player.on("trackStart", (message, track) => {
-//   message.channel.send({
-//     embed: {
-//       color: "#8966FF",
-//       author: { name: track.title },
-
-//       fields: [
-//         { name: "Channel", value: track.author, inline: true },
-//         {
-//           name: "Requested by",
-//           value: track.requestedBy.username,
-//           inline: true,
-//         },
-//         {
-//           name: "From playlist",
-//           value: track.fromPlaylist ? "Yes" : "No",
-//           inline: true,
-//         },
-
-//         { name: "Views", value: track.views, inline: true },
-//         { name: "Duration", value: track.duration, inline: true },
-//       ],
-//       thumbnail: { url: track.thumbnail },
-//       timestamp: new Date(),
-//     },
-//   });
-// });
-
 mongoose.connect(
   "mongodb://localhost:27017/wiseManBot",
   // { useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true },
