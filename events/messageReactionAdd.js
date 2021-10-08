@@ -39,8 +39,6 @@ module.exports = async (client, reaction, user) => {
       },
     };
 
-    console.log("emoji", emoji);
-
     embedPoll.reactions.cache.get(emoji)?.users.remove(userId);
   } else {
     userCount.set(user, (userCount.get(user) || 0) + 1);

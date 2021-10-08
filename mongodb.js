@@ -8,7 +8,10 @@ const config = new Schema({
   welcomeChannel: String,
   customRanks: Map,
   rankTime: { type: Number, default: 0 },
-  welcomeMessage: String,
+  welcomeMessage: {
+    type: String,
+    default: "Welcome to the server [user]!",
+  },
   defaultRole: String,
 });
 
@@ -17,7 +20,7 @@ const userSchema = new Schema({
   name: String,
   messages_count: { type: Number, default: 0 },
   rank: { type: Number, default: 0 },
-  hours: { type: Number, default: 0 },
+  time: { type: Number, default: 0 },
   lastRankTime: Date,
   discordName: String,
 });

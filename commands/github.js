@@ -9,5 +9,5 @@ exports.run = async (client, message) => {
     .setDescription(
       "This is my repository! You can check out more about the wiseman-bot"
     );
-  return message.channel.send(embed);
+  return message.channel.send({ embeds: [embed] });
 };

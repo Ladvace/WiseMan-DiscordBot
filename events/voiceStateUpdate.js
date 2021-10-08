@@ -12,7 +12,7 @@ module.exports = async (client, oldState, newState) => {
       name: oldState.member.user.username,
       messages_count: 0,
       rank: 0,
-      hours: 0,
+      time: 0,
       lastRankTime: now.getTime(),
       discordName: `${newState.member.user.username}#${newState.member.user.discriminator}`,
     };
@@ -28,7 +28,7 @@ module.exports = async (client, oldState, newState) => {
 
           return newUser.save();
         } else {
-          const diff = user.lastRankTime - Date.now();
+          const diff = Date.now() - user.lastRankTime;
           const lastRankTimeSecs = diff / 1000;
           const lastRankTimeMinutes = Math.floor(lastRankTimeSecs / 60);
           const lastRankTimeHours = Math.floor(lastRankTimeMinutes / 60);
@@ -71,7 +71,7 @@ module.exports = async (client, oldState, newState) => {
           if (err) console.log(err);
 
           if (user) {
-            const diff = user.lastRankTime - Date.now();
+            const diff = Date.now() - user.lastRankTime;
             const lastRankTimeSecs = diff / 1000;
             const lastRankTimeMinutes = Math.floor(lastRankTimeSecs / 60);
             const lastRankTimeHours = Math.floor(lastRankTimeMinutes / 60);
@@ -82,10 +82,15 @@ module.exports = async (client, oldState, newState) => {
 
             user.rank = (user.rank ? user.rank : 0) + rank;
             user.lastRankTime = now.getTime();
+            user.time = user.time + difference;
             user.save();
           }
         }
       );
+
+      client.container.users[newState.member.user.id] = {
+        start: null,
+      };
     }
   }
 };

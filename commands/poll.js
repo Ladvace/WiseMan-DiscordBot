@@ -141,7 +141,6 @@ exports.run = async (client, message, args) => {
       (vote) => vote !== 0
     ).length;
 
-    console.log("AAA", client.config.poolSolution, totalVotes);
     const newEmbed = new Discord.MessageEmbed()
       .setColor("#8966FF")
       .setDescription(

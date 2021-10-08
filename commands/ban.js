@@ -11,7 +11,7 @@ exports.run = async (client, message, args) => {
         "***Please mention the user you want to ban and specify a ban reason.***"
       );
 
-    return message.channel.send(embed);
+    return message.channel.send({ embeds: [embed] });
   }
 
   if (!user) {
@@ -23,7 +23,7 @@ exports.run = async (client, message, args) => {
         "***Please use a proper mention if you want to ban someone.***"
       );
 
-    return message.channel.send(embed);
+    return message.channel.send({ embeds: [embed] });
   }
 
   const reason = args.slice(1).join(" ");
@@ -39,5 +39,5 @@ exports.run = async (client, message, args) => {
       `***Successfully banned **${user.tag}** from the server!***`
     );
 
-  return message.channel.send(embed);
+  return message.channel.send({ embeds: [embed] });
 };

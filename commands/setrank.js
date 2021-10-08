@@ -12,8 +12,6 @@ exports.run = async (client, message, args) => {
     id: message.guild.id,
   });
 
-  console.log("setRank");
-
   if (roleName && level && Number.isInteger(parseInt(level, 10))) {
     if (server) {
       server.customRanks = { ...server.customRanks, [level]: roleId };
@@ -25,7 +23,7 @@ exports.run = async (client, message, args) => {
       .setColor("#8966ff")
       .addField("Rank", `${roleName}`);
 
-    return message.channel.send(embed);
+    return message.channel.send({ embeds: [embed] });
   } else {
     const embed = new Discord.MessageEmbed()
       .setTitle("Custom Rank")
@@ -38,6 +36,6 @@ exports.run = async (client, message, args) => {
         }setrank 7 760437474157522452\`\`\``
       );
 
-    return message.channel.send(embed);
+    return message.channel.send({ embeds: [embed] });
   }
 };
