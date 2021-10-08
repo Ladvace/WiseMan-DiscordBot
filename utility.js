@@ -1,14 +1,10 @@
 const Discord = require("discord.js");
-const firebase = require("firebase");
+const logger = require("./modules/logger");
+const { userSchema, config } = require("./mongodb");
 
-const incrementRank = async (id) => {
-  const userRef = firebase.firestore().collection("users").doc(id);
-
-  const user = await userRef.get();
-
-  if (user.exists) {
-    userRef.update({ rank: (user.data().rank && 0) + 1 });
-  }
+const incrementRank = async (user) => {
+  user.rank = (user.rank ? user.rank : 0) + 1;
+  await user.save();
 };
 
 const decrementRank = async (id) => {
@@ -21,53 +17,91 @@ const decrementRank = async (id) => {
   }
 };
 
-const incrementMessages = async (id) => {
-  const userRef = firebase.firestore().collection("users").doc(id);
-
-  const user = await userRef.get();
-
-  if (user.exists) {
-    firebase
-      .firestore()
-      .collection("users")
-      .doc(id)
-      .update({ messages_count: user.data().messages_count + 1 });
-  }
+const incrementMessages = async (user) => {
+  user.messages_count = user.messages_count + 1;
+  await user.save();
 };
 
-const levelUp = async (message, guildId, level, client) => {
-  if (message.user.id === client.user.id) return;
+const assignRankRole = async (state, client, level, tryNum = 0) => {
+  if (state.member.user.id === client.user.id) return;
 
-  const serverRef = firebase.firestore().collection("servers").doc(guildId);
+  const guildId = state.guild.id;
 
-  const server = await serverRef.get();
-  const serverSettings = await server.data();
+  const channel = await config.findOne({
+    id: guildId,
+  });
 
-  const hasCustomRank = serverSettings.customRanks.hasOwnProperty(level);
+  if (!channel) {
+    const newServer = new config({
+      id: guildId,
+      guildPrefix: "!",
+      guildNotificationChannelID: null,
+      welcomeChannel: null,
+      customRanks: {},
+      rankTime: null,
+      defaultRole: null,
+    });
+
+    await newServer.save();
+
+    if (tryNum < 3) assignRankRole(state, client, level, tryNum + 1);
+    else return;
+  }
 
   const embed = new Discord.MessageEmbed()
-    .setAuthor(message.user.username)
+    .setAuthor(state.member.user.username)
     .setColor("#8966ff")
-    .setThumbnail(message.user.avatarURL({ format: "png" }))
+    .setThumbnail(state.member.user.avatarURL({ format: "png" }))
     .addField("Rank", `${level}`);
 
   const notificationChannel = client.channels.cache.get(
-    serverSettings.guildNotificationChannelID
+    channel?.guildNotificationChannelID
   );
 
-  const customRankId = serverSettings.customRanks[level];
-  const roleExist = message.guild.roles.cache.has(customRankId);
-  if (hasCustomRank && roleExist) {
-    const customRole = message.guild.roles.cache.get(customRankId);
+  if (channel?.customRanks) {
+    const customRankId = channel.customRanks.get(level);
 
-    message.roles
-      .add(customRole)
-      .then(() => {
-        if (serverSettings.guildNotificationChannelID)
-          return notificationChannel.send(embed);
-      })
-      .catch((e) => console.error("error", e));
+    if (customRankId) {
+      const customRole = state.guild.roles.cache.get(customRankId);
+
+      message.roles
+        .add(customRole)
+        .then(() => {
+          if (channel?.guildNotificationChannelID)
+            return notificationChannel.send({ embeds: [embed] });
+        })
+        .catch((e) => logger.error(e));
+    }
+    // else {
+    //   const customRankId = await state.guild.roles.create({
+    //     name: `Level ${level}`,
+    //     color: "#738AD6",
+    //     reason: `${level} role missing`,
+    //   });
+
+    //   console.log("ROLE", customRankId.id, level);
+    //   channel.customRanks.set(level.toString(), customRankId.id);
+    // }
   }
 };
 
-module.exports = { incrementRank, decrementRank, incrementMessages, levelUp };
+const msToTime = (duration) => {
+  let milliseconds = Math.floor((duration % 1000) / 100);
+  let seconds = Math.floor((duration / 1000) % 60);
+  let minutes = Math.floor((duration / (1000 * 60)) % 60);
+  let hours = Math.floor((duration / (1000 * 60 * 60)) % 24);
+
+  hours = hours < 10 ? "0" + hours : hours;
+  minutes = minutes < 10 ? "0" + minutes : minutes;
+  seconds = seconds < 10 ? "0" + seconds : seconds;
+
+  return hours + ":" + minutes + ":" + seconds + "." + milliseconds;
+};
+
+module.exports = {
+  incrementRank,
+  decrementRank,
+  incrementMessages,
+  assignRankRole,
+  msToTime,
+};

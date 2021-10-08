@@ -1,73 +1,96 @@
-const firebase = require("firebase");
-const { incrementRank, levelUp } = require("../utility");
-const localConfig = require("../config.json");
+const { userSchema } = require("../mongodb");
+const logger = require("../modules/logger");
+const { assignRankRole } = require("../utility");
 
 module.exports = async (client, oldState, newState) => {
-  const millisPerHour = 60 * localConfig.minutes * 1000; //1h
-  const millisPastTheHour = Date.now() % millisPerHour;
-  const millisToTheHour = millisPerHour - millisPastTheHour;
-
-  if (newState.channelID && !oldState.channelID) {
-    client.logger.log("Someone joined");
+  if (newState.channel?.id && !oldState.channel?.id) {
+    logger.log("Someone joined");
+    const now = new Date();
 
     const userSchemaConfig = {
-      serverName: newState.guild.name,
-      id: `${newState.id}#${newState.guild.id}`,
-      name: newState.member.user.username,
+      id: `${newState.member.user.id}#${newState.guild.id}`,
+      name: oldState.member.user.username,
       messages_count: 0,
       rank: 0,
+      time: 0,
+      lastRankTime: now.getTime(),
       discordName: `${newState.member.user.username}#${newState.member.user.discriminator}`,
     };
 
-    const users = firebase
-      .firestore()
-      .collection("users")
-      .doc(`${newState.id}#${newState.guild.id}`);
+    userSchema.findOne(
+      {
+        id: `${newState.member.user.id}#${newState.guild.id}`,
+      },
+      (err, user) => {
+        if (err) console.log(err);
+        if (!user) {
+          const newUser = new userSchema(userSchemaConfig);
 
-    const user = await users.get();
+          return newUser.save();
+        } else {
+          const diff = Date.now() - user.lastRankTime;
+          const lastRankTimeSecs = diff / 1000;
+          const lastRankTimeMinutes = Math.floor(lastRankTimeSecs / 60);
+          const lastRankTimeHours = Math.floor(lastRankTimeMinutes / 60);
 
-    if (!user.exists) {
-      firebase.firestore().collection("users").doc(id).set(userSchemaConfig);
-    }
+          const lessThan48Hours = lastRankTimeHours > 48;
 
-    client.config.timers[newState.guild.id] = {};
-    client.config.intervals[newState.guild.id] = {};
+          // const rank = lessThan48Hours ? Math.floor(minutes / 2) : minutes;
+          if (lessThan48Hours && user.rank) user.rank = user.rank - 10;
+          const rank = user.rank;
 
-    client.config.timers[newState.guild.id][newState.id] = setTimeout(() => {
-      client.config.intervals[newState.guild.id][newState.id] = setInterval(
-        async () => {
-          if (user.exists) {
-            // client.config.rankIncrementin24hCount[newState.guild.id][
-            //   newState.id
-            // ] += 1;
+          // check for the rank and add a role (default or custom )
+          assignRankRole(newState, client, rank);
 
-            await incrementRank(`${newState.id}#${newState.guild.id}`);
-
-            await levelUp(
-              newState.member,
-              newState.guild.id,
-              user.data().rank,
-              client
-            );
-          }
-        },
-        millisPerHour
-      );
-    }, millisToTheHour);
-  } else if (oldState.channelID && !newState.channelID) {
-    client.logger.log("Someone left");
-
-    try {
-      if (
-        client.config.timers[newState.guild.id][newState.id] &&
-        client.config.intervals[newState.guild.id][newState.id]
-      ) {
-        client.logger.log("clear");
-        clearTimeout(client.config.timers[oldState.guild.id][newState.id]);
-        clearInterval(client.config.intervals[oldState.guild.id][newState.id]);
+          user.save();
+        }
       }
-    } catch (e) {
-      console.error(e);
+    );
+
+    client.container.users[newState.member.user.id] = {
+      start: now.getTime(),
+    };
+  } else if (oldState.channel?.id && !newState.channel?.id) {
+    logger.log("Someone left");
+
+    const startTimestamp =
+      client.container.users[oldState.member.user.id]?.start;
+    const now = new Date();
+
+    const difference = now.getTime() - startTimestamp;
+    const msToSec = difference / 1000;
+    const minutes = Math.floor(msToSec / 60);
+    // const hours = Math.floor(minutes / 60);
+
+    if (!Number.isNaN(minutes)) {
+      userSchema.findOne(
+        {
+          id: `${oldState.id}#${oldState.guild.id}`,
+        },
+        (err, user) => {
+          if (err) console.log(err);
+
+          if (user) {
+            const diff = Date.now() - user.lastRankTime;
+            const lastRankTimeSecs = diff / 1000;
+            const lastRankTimeMinutes = Math.floor(lastRankTimeSecs / 60);
+            const lastRankTimeHours = Math.floor(lastRankTimeMinutes / 60);
+
+            const lessThan48Hours = lastRankTimeHours > 48;
+
+            const rank = lessThan48Hours ? Math.floor(minutes / 2) : minutes;
+
+            user.rank = (user.rank ? user.rank : 0) + rank;
+            user.lastRankTime = now.getTime();
+            user.time = user.time + difference;
+            user.save();
+          }
+        }
+      );
+
+      client.container.users[newState.member.user.id] = {
+        start: null,
+      };
     }
   }
 };

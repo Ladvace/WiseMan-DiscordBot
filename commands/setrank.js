@@ -3,42 +3,27 @@ const firebase = require("firebase");
 const { prefix } = require("../config.json");
 
 exports.run = async (client, message, args) => {
-  const configSettings = {
-    id: message.guild.id,
-    guildPrefix: "!",
-    guildNotificationChannelID: null,
-    welcomeChannel: null,
-    customRanks: {},
-    rankTime: null,
-    defaultRole: null,
-  };
-
   const level = args[0];
   const roleId = args[1];
 
   const roleName = message.guild.roles.cache.get(roleId)?.name;
 
-  const serverRef = firebase
-    .firestore()
-    .collection("servers")
-    .doc(message.guild.id);
-
-  const server = await serverRef.get();
-  const serverData = await server.data();
-
-  if (!server.exists) {
-    serverRef.set(configSettings);
-  }
+  const server = await config.findOne({
+    id: message.guild.id,
+  });
 
   if (roleName && level && Number.isInteger(parseInt(level, 10))) {
-    serverRef.update({ [level]: roleId });
+    if (server) {
+      server.customRanks = { ...server.customRanks, [level]: roleId };
+      return server.save();
+    }
 
     const embed = new Discord.MessageEmbed()
       .setTitle("Custom Rank")
       .setColor("#8966ff")
       .addField("Rank", `${roleName}`);
 
-    return message.channel.send(embed);
+    return message.channel.send({ embeds: [embed] });
   } else {
     const embed = new Discord.MessageEmbed()
       .setTitle("Custom Rank")
@@ -47,10 +32,10 @@ exports.run = async (client, message, args) => {
       .addField(
         "Example:",
         `\`\`\`${
-          serverData.guildPrefix || prefix
+          server.guildPrefix || prefix
         }setrank 7 760437474157522452\`\`\``
       );
 
-    return message.channel.send(embed);
+    return message.channel.send({ embeds: [embed] });
   }
 };

@@ -1,9 +1,12 @@
 "use strict";
-const Discord = require("discord.js");
-const localConfig = require("./config.json");
 // eslint-disable-next-line no-unused-vars
 const env = require("dotenv").config();
-const client = new Discord.Client();
+const { Client, Collection } = require("discord.js");
+const logger = require("./modules/logger.js");
+const localConfig = require("./config.json");
+const { intents, partials, permLevels } = require("./config.js");
+
+const client = new Client({ intents, partials });
 
 const { Player } = require("discord-player");
 
@@ -11,52 +14,68 @@ client.player = new Player(client);
 
 const firebase = require("firebase");
 const fs = require("fs");
-// const tmi = require("tmi.js");
-const Enmap = require("enmap");
+// const Enmap = require("enmap");
 
-const firebaseConfig = {
-  apiKey: process.env.apiKey,
-  authDomain: process.env.authDomain,
-  databaseURL: process.env.databaseURL,
-  projectId: process.env.projectId,
-  storageBucket: process.env.storageBucket,
-  messagingSenderId: process.env.messagingSenderId,
-  appId: process.env.appId,
-  measurementId: process.env.measurementId,
+const commands = new Collection();
+const aliases = new Collection();
+const slashcmds = new Collection();
+
+const levelCache = {};
+for (let i = 0; i < permLevels.length; i++) {
+  const thisLevel = permLevels[i];
+  levelCache[thisLevel.name] = thisLevel.level;
+}
+
+client.container = {
+  commands,
+  aliases,
+  slashcmds,
+  levelCache,
+  users: {},
 };
-
-if (firebase.apps.length === 0) firebase.initializeApp(firebaseConfig);
 
 client.config = localConfig;
 client.logger = require("./modules/Logger");
 
-client.player.on("trackStart", (message, track) => {
-  message.channel.send({
-    embed: {
-      color: "#8966FF",
-      author: { name: track.title },
+// client.player.on("trackStart", (message, track) => {
+//   message.channel.send({
+//     embed: {
+//       color: "#8966FF",
+//       author: { name: track.title },
 
-      fields: [
-        { name: "Channel", value: track.author, inline: true },
-        {
-          name: "Requested by",
-          value: track.requestedBy.username,
-          inline: true,
-        },
-        {
-          name: "From playlist",
-          value: track.fromPlaylist ? "Yes" : "No",
-          inline: true,
-        },
+//       fields: [
+//         { name: "Channel", value: track.author, inline: true },
+//         {
+//           name: "Requested by",
+//           value: track.requestedBy.username,
+//           inline: true,
+//         },
+//         {
+//           name: "From playlist",
+//           value: track.fromPlaylist ? "Yes" : "No",
+//           inline: true,
+//         },
 
-        { name: "Views", value: track.views, inline: true },
-        { name: "Duration", value: track.duration, inline: true },
-      ],
-      thumbnail: { url: track.thumbnail },
-      timestamp: new Date(),
-    },
-  });
-});
+//         { name: "Views", value: track.views, inline: true },
+//         { name: "Duration", value: track.duration, inline: true },
+//       ],
+//       thumbnail: { url: track.thumbnail },
+//       timestamp: new Date(),
+//     },
+//   });
+// });
+
+mongoose.connect(
+  "mongodb://localhost:27017/wiseManBot",
+  // { useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true },
+  (err) => {
+    if (err) {
+      console.log(err);
+      return process.exit(22);
+    }
+    logger.log("Connected to the db");
+  }
+);
 
 fs.readdir("./events/", (err, files) => {
   if (err) return console.error(err);
@@ -76,7 +95,7 @@ fs.readdir("./events/", (err, files) => {
   });
 });
 
-client.commands = new Enmap();
+// client.commands = new Enmap();
 
 fs.readdir("./commands/", (err, files) => {
   if (err) return console.error(err);
@@ -86,9 +105,9 @@ fs.readdir("./commands/", (err, files) => {
     let props = require(`./commands/${file}`);
     // Get just the command name from the file name
     let commandName = file.split(".")[0];
-    client.logger.log(`Attempting to load command ${commandName}`);
+    logger.log(`Attempting to load command ${commandName}`);
     // Here we simply store the whole thing in the command Enmap. We're not running it right now.
-    client.commands.set(commandName, props);
+    client.container.commands.set(commandName, props);
   });
 });
 

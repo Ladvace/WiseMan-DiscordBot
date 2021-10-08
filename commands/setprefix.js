@@ -1,43 +1,31 @@
 const Discord = require("discord.js");
-const firebase = require("firebase");
+const logger = require("../modules/logger");
+const { config } = require("../mongodb");
 
 exports.run = async (client, message, args) => {
   const perms = message.member.permissions;
   const isAdmin = perms.has("ADMINISTRATOR");
 
-  const configSettings = {
-    id: message.guild.id,
-    guildPrefix: "!",
-    guildNotificationChannelID: null,
-    welcomeChannel: null,
-    customRanks: {},
-    rankTime: null,
-    defaultRole: null,
-  };
-
   if (isAdmin && args[0]?.length === 1) {
-    const serverRef = firebase
-      .firestore()
-      .collection("servers")
-      .doc(message.guild.id);
+    config.findOne(
+      {
+        id: message.guild.id,
+      },
+      (err, server) => {
+        if (err) logger.error(err);
 
-    const server = await serverRef.get();
+        if (server) {
+          server.guildPrefix = args[0].trim();
+          server.save();
 
-    if (!server.exists) {
-      serverRef.set(configSettings);
-    }
+          const embed = new Discord.MessageEmbed()
+            .setTitle("Prefix")
+            .setColor("#8966ff")
+            .setDescription(`Prefix set to \`\`\`${args[0]}\`\`\``);
 
-    client.config.serverSettings[message.guild.id] = server.data();
-
-    if (server) {
-      serverRef.update({ guildPrefix: args[0].trim() });
-
-      const embed = new Discord.MessageEmbed()
-        .setTitle("Prefix")
-        .setColor("#8966ff")
-        .setDescription(`Prefix setted to \`\`\`${args[0]}\`\`\``);
-
-      return message.channel.send(embed);
-    }
+          return message.channel.send({ embeds: [embed] });
+        }
+      }
+    );
   }
 };
