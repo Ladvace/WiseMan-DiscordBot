@@ -1,12 +1,16 @@
 <p align="center">
-    <img width="300" height="auto" src="https://i.imgur.com/yCFscwQ.png" alt="WiseMan" />
+    <img width="500" height="auto" src="https://i.imgur.com/et6QQbt.png" alt="WiseMan" />
 </p>
 
 ## WiseMan - Discord Bot 🤖
 
 [![forthebadge](https://forthebadge.com/images/badges/gluten-free.svg)](https://forthebadge.com) [![forthebadge](https://forthebadge.com/images/badges/made-with-crayons.svg)](https://forthebadge.com) [![forthebadge](https://forthebadge.com/images/badges/made-with-javascript.svg)](https://forthebadge.com) [![forthebadge](https://forthebadge.com/images/badges/built-with-love.svg)](https://forthebadge.com)
 
-⚠️ **I don't have so much time to maintain this project, if anyone is insterested in helping mantaining/developing this project feel free to open an issue or contacting me**
+⚠️ **I don't have so much time to maintain this project, if anyone is insterested in helping mantaining/developing this project feel free to open an issue or contacting me** ⚠️
+
+<h2>The current maintened brench is mongodbVersion</h2>
+<br/>
+<br/>
 
 This bot allows you to level up based on the time you spend in a vocal channel and how much you write in a text channel
 
@@ -38,6 +42,8 @@ $ npm i
 
 Create an `.ENV` file and replace `*TOKEN*` with the token.
 You can take the token from [discord developers page](https://discordapp.com/developers/applications/) > Bot
+
+Follow the firebase guide below for firebase configuration instead
 
 ```
 $ TOKEN="*TOKEN*"
