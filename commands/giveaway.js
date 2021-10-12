@@ -126,8 +126,8 @@ exports.conf = {
 };
 
 exports.help = {
-  name: "eval",
-  category: "System",
-  description: "Evaluates arbitrary javascript.",
-  usage: "eval [...code]",
+  name: "giveaway",
+  category: "Utility",
+  description: "You can run a giveaway in your server.",
+  usage: "giveaway 3m title of the giveaway",
 };

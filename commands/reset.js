@@ -10,27 +10,9 @@ exports.run = async (client, message) => {
 
   if (isAdmin) {
     if (member) {
-      member.roles.remove([...member.guild.roles.cache.keyArray()]);
       userSchema.findOne(
         {
           id: `${member.id}#${message.guild.id}`,
-        },
-        (err, user) => {
-          if (err) logger.error(err);
-          if (user) {
-            user.messages_count = 0;
-            user.rank = 0;
-            user.save();
-          }
-        }
-      );
-    } else {
-      message.member.roles.remove([
-        ...message.member.guild.roles.cache.keyArray(),
-      ]);
-      await userSchema.findOne(
-        {
-          id: `${message.author.id}#${message.guild.id}`,
         },
         (err, user) => {
           if (err) logger.error(err);
@@ -47,7 +29,7 @@ exports.run = async (client, message) => {
     .setAuthor(message.author.username)
     .setColor("#8966ff")
     .setThumbnail(message.author.avatarURL({ format: "png" }))
-    .setDescription("***Your rank has been reset!***");
+    .setDescription(`**${member.user.username}\'s rank has been reset!***`);
 
   return message.channel.send({ embeds: [embed] });
 };
@@ -60,8 +42,8 @@ exports.conf = {
 };
 
 exports.help = {
-  name: "eval",
+  name: "reset",
   category: "System",
-  description: "Evaluates arbitrary javascript.",
-  usage: "eval [...code]",
+  description: "An admin can reset somebody's rank",
+  usage: "reset @user",
 };

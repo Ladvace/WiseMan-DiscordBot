@@ -3,6 +3,9 @@ const logger = require("../modules/logger");
 const { assignRankRole } = require("../utility");
 
 module.exports = async (client, oldState, newState) => {
+  let time = 0;
+  let intervalId = null;
+
   if (newState.channel?.id && !oldState.channel?.id) {
     logger.log("Someone joined");
     const now = new Date();
@@ -39,6 +42,10 @@ module.exports = async (client, oldState, newState) => {
           // const rank = lessThan48Hours ? Math.floor(minutes / 2) : minutes;
           if (lessThan48Hours && user.rank) user.rank = user.rank - 10;
           const rank = user.rank;
+          // time = user.time;
+          // intervalId = setInterval(() => {
+
+          // }, 60_000);
 
           // check for the rank and add a role (default or custom )
           assignRankRole(newState, client, rank);
@@ -79,7 +86,8 @@ module.exports = async (client, oldState, newState) => {
 
             const lessThan48Hours = lastRankTimeHours > 48;
 
-            const rank = lessThan48Hours ? Math.floor(minutes / 2) : minutes;
+            const rankCalc = lessThan48Hours ? minutes - 20 : minutes;
+            const rank = rankCalc < 0 ? 0 : rankCalc;
 
             user.rank = (user.rank ? user.rank : 0) + rank;
             user.lastRankTime = now.getTime();

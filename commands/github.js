@@ -22,6 +22,6 @@ exports.conf = {
 exports.help = {
   name: "github",
   category: "infos",
-  description: "Github code repository",
+  description: "Github code repository.",
   usage: "github",
 };

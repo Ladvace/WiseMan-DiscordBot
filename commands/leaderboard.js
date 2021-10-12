@@ -32,8 +32,8 @@ exports.conf = {
 };
 
 exports.help = {
-  name: "ranks",
-  category: "stats",
+  name: "leaderboard",
+  category: "Stats",
   description: "Leaderboard based on the time spent in vocal channels",
-  usage: "ranks",
+  usage: "leaderboard",
 };

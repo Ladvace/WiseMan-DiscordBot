@@ -3,9 +3,8 @@ const Discord = require("discord.js");
 exports.run = async (client, message, args) => {
   const name = args[0];
   const time = args[1]?.toLowerCase();
-  const parentId = args[2];
 
-  let timeDuration = null;
+  let timeDuration = "hour";
   const timeDurations = {
     s: "second",
     m: "minute",
@@ -16,6 +15,18 @@ exports.run = async (client, message, args) => {
   let timeInMilliseconds = 0;
 
   if (!message.member.permissions.has("ADMINISTRATOR")) return;
+
+  if (!name) {
+    const embed = new Discord.MessageEmbed()
+      .setTitle("Temp voice channel")
+      .setColor("#8966FF")
+      .setDescription(
+        `A name is required in order to create a temp voice channel.`
+      );
+
+    return message.channel.send({ embeds: [embed] });
+  }
+
   let parsedTime = 1;
   if (time) {
     parsedTime = time.slice(0, time.length - 1);
@@ -41,9 +52,10 @@ exports.run = async (client, message, args) => {
         return null;
     }
   }
+
   const channel = await message.guild.channels.create(name, {
     type: "GUILD_VOICE",
-    parent: parentId,
+    parent: message.channel.parentId,
     permissionOverwrites: [
       {
         id: message.guild.id,
@@ -66,7 +78,7 @@ exports.run = async (client, message, args) => {
   message.channel.send({ embeds: [embed] });
 
   setTimeout(() => {
-    channel.delete();
+    return channel.delete();
   }, timeInMilliseconds || 3600000);
 };
 
@@ -79,7 +91,7 @@ exports.conf = {
 
 exports.help = {
   name: "createtempchannel",
-  category: "stats",
+  category: "Utility",
   description: "Create a temp channel.",
   usage: "createTempChannel 3m PARENTID",
 };

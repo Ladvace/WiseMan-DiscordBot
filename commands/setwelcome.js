@@ -30,7 +30,7 @@ module.exports.run = async (client, message) => {
           .setTitle("Prefix")
           .setColor("#8966ff")
           .setDescription(
-            `welcome message setted to \`\`\`${welcomeMessage}\`\`\``
+            `welcome message set to \`\`\`${welcomeMessage}\`\`\``
           );
 
         return message.channel.send({ embeds: [embed] });
@@ -47,8 +47,9 @@ exports.conf = {
 };
 
 exports.help = {
-  name: "eval",
+  name: "setWelcome",
   category: "System",
-  description: "Evaluates arbitrary javascript.",
-  usage: "eval [...code]",
+  description:
+    "You can set a custom welcome message for the new user who joins the server for the first time, use [user] as a placeholder to be replaced by the new user's name",
+  usage: "setwelcome Hello [user]",
 };

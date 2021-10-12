@@ -63,7 +63,6 @@ exports.run = (client, message, args, level) => {
       )} :: ${c.help.description}\n`;
     });
 
-
     message.channel.send({ content: codeBlock("asciidoc", output) });
   } else {
     // Show individual command's help.
@@ -97,13 +96,13 @@ exports.run = (client, message, args, level) => {
 exports.conf = {
   enabled: true,
   guildOnly: false,
-  aliases: ["h", "halp"],
+  aliases: ["h"],
   permLevel: "User",
 };
 
 exports.help = {
   name: "help",
   category: "System",
-  description: "Displays all the available commands for your permission level.",
-  usage: "help [command]",
+  description: "Displays all the available commands.",
+  usage: "help or help [command]",
 };

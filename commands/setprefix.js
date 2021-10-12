@@ -33,13 +33,13 @@ exports.run = async (client, message, args) => {
 exports.conf = {
   enabled: true,
   guildOnly: false,
-  aliases: [],
+  aliases: ["setPrefix"],
   permLevel: "User",
 };
 
 exports.help = {
-  name: "eval",
+  name: "setprefix",
   category: "System",
-  description: "Evaluates arbitrary javascript.",
-  usage: "eval [...code]",
+  description: "You can reset the prefix of the server, the default one is ! ",
+  usage: "setprefix ?",
 };
