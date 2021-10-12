@@ -8,10 +8,6 @@ const { intents, partials, permLevels } = require("./config.js");
 
 const client = new Client({ intents, partials });
 
-const { Player } = require("discord-player");
-
-client.player = new Player(client);
-
 const mongoose = require("mongoose");
 const fs = require("fs");
 // const Enmap = require("enmap");
@@ -41,7 +37,7 @@ mongoose.connect(
   // { useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true },
   (err) => {
     if (err) {
-      console.log(err);
+      logger.error(err);
       return process.exit(22);
     }
     logger.log("Connected to the db");

@@ -1,100 +1,109 @@
 const Discord = require("discord.js");
-const { config } = require("../mongodb");
+const { codeBlock } = require("@discordjs/builders");
+const { toProperCase } = require("../utility");
 
-exports.run = async (client, message) => {
-  // const RemotePrefix = await config.findOne({
-  //   id: message.guild.id,
-  // });
+exports.run = (client, message, args, level) => {
+  // Grab the container from the client to reduce line length.
+  const { container } = client;
+  // If no specific command is called, show all filtered commands.
+  if (!args[0]) {
+    // Load guild settings (for prefixes and eventually per-guild tweaks)
+    // const settings = message.settings;
 
-  // const input = message.content;
-  // const pollHelp = input.includes("--poll");
-  // const setRankHelp = input.includes("--setRank");
-  // const embed = new Discord.MessageEmbed();
-  // if (pollHelp) {
-  //   embed
-  //     .setTitle("Poll")
-  //     .setThumbnail("https://i.imgur.com/AtmK18i.png")
-  //     .setColor("#8966FF")
-  //     .addField(
-  //       `\`\`\`${RemotePrefix.guildPrefix || prefix}poll\`\`\``,
-  //       "\u200B"
-  //     )
-  //     .addFields({
-  //       name: `Arguments`,
-  //       value: "\u200B",
-  //       inline: false,
-  //     })
-  //     .addField(`\`\`\`--option\`\`\``, "you must enter at least two option")
-  //     .addField(
-  //       `\`\`\`--question\`\`\``,
-  //       "you must enter at least one question"
-  //     )
-  //     .addField(
-  //       `\`\`\`--timeout\`\`\``,
-  //       "this is the time in hours the poll will last, the default value it's 1h"
-  //     )
-  //     .addField(
-  //       "Example:",
-  //       `\`\`\`${
-  //         RemotePrefix.guildPrefix || prefix
-  //       }poll --option option1 --option option2 --option option3 --question is this a question? --timeout 3\`\`\``
-  //     );
-  //   return message.channel.send(embed);
-  // } else if (setRankHelp) {
-  //   embed
-  //     .setTitle("setRank")
-  //     .setThumbnail("https://i.imgur.com/AtmK18i.png")
-  //     .setColor("#8966FF")
-  //     .addField(
-  //       `\`\`\`${RemotePrefix.guildPrefix || prefix}setRank\`\`\``,
-  //       "\u200B"
-  //     )
-  //     .addFields({
-  //       name: `Arguments`,
-  //       value: "\u200B",
-  //       inline: false,
-  //     })
-  //     .addField(
-  //       "you must enter as **first** argument the level you want the role to be setted and as **second** argumnet the role id",
-  //       "\u200B"
-  //     )
-  //     .addField(
-  //       "Example:",
-  //       `\`\`\`${RemotePrefix.guildPrefix || prefix}setRank 7 idRank\`\`\``
-  //     );
-  //   return message.channel.send(embed);
-  // }
-  // embed
-  //   .setTitle("Commands")
-  //   .setThumbnail("https://i.imgur.com/AtmK18i.png")
-  //   .setColor("#8966FF")
-  //   .addField(
-  //     `\`\`\`${RemotePrefix.guildPrefix || prefix}rank\`\`\``,
-  //     "It shows you the  rank"
-  //   )
-  //   .addField(
-  //     `\`\`\`${RemotePrefix.guildPrefix || prefix}github\`\`\``,
-  //     "It gives you the link of the github repo"
-  //   )
-  //   .addField(
-  //     ` \`\`\`${RemotePrefix.guildPrefix || prefix}help\`\`\``,
-  //     `probably you already know that 😄`
-  //   )
-  //   .addField(
-  //     `\`\`\`${RemotePrefix.guildPrefix || prefix}setPrefix\`\`\``,
-  //     "It allows you to set a new command prefix"
-  //   )
-  //   .addField(
-  //     `\`\`\`${RemotePrefix.guildPrefix || prefix}setRank\`\`\``,
-  //     "It allows you to set a custom role for each level, use --setRank to get more information"
-  //   )
-  //   .addField(
-  //     `\`\`\`${RemotePrefix.guildPrefix || prefix}setNotificationChannel\`\`\``,
-  //     "It allows you to set a new text channel where the notification will be sent"
-  //   )
-  //   .addField(
-  //     `\`\`\`${RemotePrefix.guildPrefix || prefix}poll\`\`\``,
-  //     "It allows you to create a poll, use --poll to get more information"
-  //   );
-  // return message.channel.send(embed);
+    // Filter all commands by which are available for the user's level, using the <Collection>.filter() method.
+    // const myCommands = message.guild
+    //   ? container.commands.filter(
+    //       (cmd) => container.levelCache[cmd.conf.permLevel] <= level
+    //     )
+    //   : container.commands.filter(
+    //       (cmd) =>
+    //         container.levelCache[cmd.conf.permLevel] <= level &&
+    //         cmd.conf.guildOnly !== true
+    //     );
+
+    // Then we will filter the myCommands collection again to get the enabled commands.
+    // const enabledCommands = myCommands.filter((cmd) => cmd.conf.enabled);
+    const enabledCommands = container.commands.filter(
+      (cmd) => cmd.conf.enabled
+    );
+
+    // Here we have to get the command names only, and we use that array to get the longest name.
+    const commandNames = [...enabledCommands.keys()];
+
+    // This make the help commands "aligned" in the output.
+    const longest = commandNames.reduce(
+      (long, str) => Math.max(long, str.length),
+      0
+    );
+
+    let currentCategory = "";
+    let output = `= Command List =\n[Use ${client.config.prefix}help <commandname> for details]\n`;
+    const sorted = enabledCommands.sort((p, c) =>
+      p.help.category > c.help.category
+        ? 1
+        : p.help.name > c.help.name && p.help.category === c.help.category
+        ? 1
+        : -1
+    );
+    const embed = new Discord.MessageEmbed()
+      .setTitle("Command List")
+      .setDescription(
+        `[Use ${client.config.prefix}help <commandname> for details]`
+      )
+      .setColor("#8966ff");
+
+    sorted.forEach((c) => {
+      const cat = toProperCase(c.help.category);
+      if (currentCategory !== cat) {
+        output += `\u200b\n== ${cat} ==\n`;
+        currentCategory = cat;
+      }
+      output += `${client.config.prefix}${c.help.name}${" ".repeat(
+        longest - c.help.name.length
+      )} :: ${c.help.description}\n`;
+    });
+
+
+    message.channel.send({ content: codeBlock("asciidoc", output) });
+  } else {
+    // Show individual command's help.
+    let command = args[0];
+    if (
+      container.commands.has(command) ||
+      container.commands.has(container.aliases.get(command))
+    ) {
+      command =
+        container.commands.get(command) ??
+        container.commands.get(container.aliases.get(command));
+      if (level < container.levelCache[command.conf.permLevel]) return;
+
+      const embed = new Discord.MessageEmbed()
+        .setTitle(command.help.name)
+        .setDescription(command.help.description)
+        .setColor("#8966ff")
+        // .setThumbnail(state.member.user.avatarURL({ format: "png" }))
+        .addField("Usage", `\`\`\`${command.help.usage}\`\`\``);
+
+      message.channel.send({
+        embeds: [embed],
+      });
+    } else
+      return message.channel.send({
+        content: "No command with that name, or alias exists.",
+      });
+  }
+};
+
+exports.conf = {
+  enabled: true,
+  guildOnly: false,
+  aliases: ["h", "halp"],
+  permLevel: "User",
+};
+
+exports.help = {
+  name: "help",
+  category: "System",
+  description: "Displays all the available commands for your permission level.",
+  usage: "help [command]",
 };

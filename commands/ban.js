@@ -41,3 +41,17 @@ exports.run = async (client, message, args) => {
 
   return message.channel.send({ embeds: [embed] });
 };
+
+exports.conf = {
+  enabled: true,
+  guildOnly: false,
+  aliases: [],
+  permLevel: "Administrator",
+};
+
+exports.help = {
+  name: "ban",
+  category: "System",
+  description: "ban who users who doesn't follow the rules",
+  usage: "ban @user reason",
+};

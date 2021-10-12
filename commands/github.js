@@ -11,3 +11,17 @@ exports.run = async (client, message) => {
     );
   return message.channel.send({ embeds: [embed] });
 };
+
+exports.conf = {
+  enabled: false,
+  guildOnly: false,
+  aliases: [],
+  permLevel: "User",
+};
+
+exports.help = {
+  name: "github",
+  category: "infos",
+  description: "Github code repository",
+  usage: "github",
+};

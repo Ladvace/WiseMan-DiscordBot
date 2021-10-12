@@ -5,27 +5,26 @@ const Discord = require("discord.js");
 exports.run = async (client, message, args) => {
   const timeoutRegex = /--timeout\s+(\S+)/gi;
   const optionRegex = /--option\s+(\S+)/gi;
-
-  const questionRegex = /--question\s*(.*?)\s+--/;
+  const questionRegex = /--question\s*(.*?)\s+--/gi;
 
   const userId = message.author.id;
-
-  // client.config.reactionCount[userId] = {};
 
   const input = message.content;
 
   if (!input.match(optionRegex) || !input.match(questionRegex))
-    return message.channel.send("Command not Valid");
+    return message.channel.send({ content: "Command not Valid" });
 
   const optionValues = input
     .match(optionRegex)
     ?.map((x) => x.replace(/\s\s+/g, " ").split(" ")[1]);
 
-  const question = input.match(questionRegex)[1];
+  const question = questionRegex.exec(input)[1];
 
   const timeOut =
     input.match(timeoutRegex) &&
     input.match(timeoutRegex)[0].replace(/\s\s+/g, " ").split(" ")[1];
+
+  console.log("AAAA", question);
 
   if (optionValues.length < 2 || !question)
     return message.channel.send(
@@ -95,20 +94,15 @@ exports.run = async (client, message, args) => {
     .setTimestamp(datePlusHour)
     .setFooter("Ends", null);
 
-  const embedMessage = await message.channel.send(
-    ":bar_chart: **POLL** :bar_chart:",
-    embed
-  );
+  const embedMessage = await message.channel.send({
+    content: ":bar_chart: **POLL** :bar_chart:",
+    embeds: [embed],
+  });
 
   const embedId = embedMessage.id;
 
   await Promise.all(
     optionValues.map(async (x, i) => {
-      client.config.pollAnswers[embedId] = {
-        ...client.config.pollAnswers[embedId],
-        [emoji[i]]: 0,
-      };
-
       if (x !== "--option" && x !== "--question")
         await embedMessage.react(emoji[i]);
     })
@@ -121,14 +115,9 @@ exports.run = async (client, message, args) => {
     return score;
   };
 
+  console.log("TTT", hoursToMilliseconds);
   setTimeout(() => {
     // embedMessage.reactions.cache.keys().map((x) => console.log("TRATA", c));
-    console.log(
-      "end poll",
-      embedMessage.reactions.cache.keys(),
-      // embedMessage.reactions.cache,
-      client.config.pollAnswers[embedId]
-    );
     embedMessage.reactions.cache.map((x) => {
       const sum = Object.values(embedMessage.reactions).reduce(sumReducer);
 
@@ -137,9 +126,7 @@ exports.run = async (client, message, args) => {
         sum > 0 ? Math.floor(scoreTest(x[1], sum)) : 0;
     });
 
-    const totalVotes = Object.values(embedMessage.reactions).filter(
-      (vote) => vote !== 0
-    ).length;
+    const totalVotes = Object.values(embedMessage.reactions).length;
 
     const newEmbed = new Discord.MessageEmbed()
       .setColor("#8966FF")
@@ -154,7 +141,7 @@ exports.run = async (client, message, args) => {
         ...Object.entries(embedMessage.reactions).map((x, i) => {
           return {
             name: `${optionValues[i]} : ${
-              client.config.poolSolution[x[0]] || 0
+              client.config.poolSolution[emoji[i]] || 0
             }%`,
             value: "\u200B",
             inline: false,
@@ -163,13 +150,16 @@ exports.run = async (client, message, args) => {
       )
       .setTimestamp(+new Date())
       .setFooter("Ended", null);
-    embedMessage.edit(":bar_chart: **POLL ENDED** :bar_chart:", newEmbed);
+    embedMessage.edit({
+      content: ":bar_chart: **POLL ENDED** :bar_chart:",
+      embeds: [newEmbed],
+    });
 
     Object.keys(embedMessage.reactions).map((emoji) => {
       embedMessage.reactions.cache.get(emoji)?.users.cache.map((userId) => {
         embedMessage.reactions.cache.get(emoji).users.remove(userId);
       });
     });
-  }, hoursToMilliseconds);
+  }, 3000);
   // };
 };

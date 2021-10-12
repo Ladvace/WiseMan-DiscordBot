@@ -1,5 +1,6 @@
 const Discord = require("discord.js");
 const { config } = require("../mongodb");
+const logger = require("../modules/logger");
 
 module.exports.run = async (client, message) => {
   const welcomeMessage = message.content.split(" ").slice(1).join(" ");
@@ -9,7 +10,7 @@ module.exports.run = async (client, message) => {
       id: message.guild.id,
     },
     (err, server) => {
-      if (err) console.log(err);
+      if (err) logger.error(err);
 
       if (server) {
         if (welcomeMessage === "null") {
@@ -36,4 +37,18 @@ module.exports.run = async (client, message) => {
       }
     }
   );
+};
+
+exports.conf = {
+  enabled: true,
+  guildOnly: false,
+  aliases: [],
+  permLevel: "User",
+};
+
+exports.help = {
+  name: "eval",
+  category: "System",
+  description: "Evaluates arbitrary javascript.",
+  usage: "eval [...code]",
 };

@@ -29,3 +29,17 @@ exports.run = async (client, message, args) => {
     );
   }
 };
+
+exports.conf = {
+  enabled: true,
+  guildOnly: false,
+  aliases: [],
+  permLevel: "User",
+};
+
+exports.help = {
+  name: "eval",
+  category: "System",
+  description: "Evaluates arbitrary javascript.",
+  usage: "eval [...code]",
+};

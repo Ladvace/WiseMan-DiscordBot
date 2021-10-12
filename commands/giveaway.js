@@ -4,7 +4,7 @@ exports.run = async (client, message, args) => {
   const errorEmbed = new Discord.MessageEmbed()
     .setColor("#8966ff")
     .addField("Error", `Please enter a duration and a price`);
-  if (args.length < 2) return message.channel.send(errorEmbed);
+  if (args.length < 2) return message.channel.send({ embeds: [errorEmbed] });
 
   const time = args[0].toLowerCase();
   // const winnersCount = args[1].toLowerCase();
@@ -20,7 +20,7 @@ exports.run = async (client, message, args) => {
   let timeInMilliseconds = 0;
   const prize = message.content.split(" ").slice(2).join(" ");
 
-  if (!message.member.hasPermission("ADMINISTRATOR")) return;
+  if (!message.member.permissions.has("ADMINISTRATOR")) return;
 
   const parsedTime = time.slice(0, time.length - 1);
 
@@ -46,6 +46,7 @@ exports.run = async (client, message, args) => {
   }
 
   if (timeInMilliseconds && timeInMilliseconds > 0) {
+    console.log("time", time, parsedTime);
     const embed = new Discord.MessageEmbed()
       .setTitle(`${prize}`)
       .setColor("#8966FF")
@@ -56,10 +57,10 @@ exports.run = async (client, message, args) => {
       )
       .setTimestamp(Date.now() + timeInMilliseconds)
       .setFooter("Ends at");
-    let embedMessage = await message.channel.send(
-      ":tada: **GIVEAWAY** :tada:",
-      embed
-    );
+    let embedMessage = await message.channel.send({
+      content: ":tada: **GIVEAWAY** :tada:",
+      embeds: [embed],
+    });
     await embedMessage.react("🎉");
 
     setTimeout(() => {
@@ -74,14 +75,12 @@ exports.run = async (client, message, args) => {
 
         console.log(
           "winner",
-          message.author.id,
+
           winner,
           // winner.filter((x) => x !== undefined && x.id !== message.author.id),
-          winner.length === 0,
-          embedMessage.reactions.cache.get("🎉").users.cache.size,
+
           embedMessage.reactions.cache.get("🎉").users.cache
         );
-        // || winner.length < 1
 
         if (embedMessage.reactions.cache.get("🎉").users.cache.size < 1) {
           const winnerEmbed = new Discord.MessageEmbed()
@@ -92,7 +91,10 @@ exports.run = async (client, message, args) => {
             )
             .setTimestamp()
             .setFooter("Ended at");
-          embedMessage.edit(":tada: **GIVEAWAY ENDED** :tada:", winnerEmbed);
+          embedMessage.edit({
+            content: ":tada: **GIVEAWAY ENDED** :tada:",
+            embeds: [winnerEmbed],
+          });
         }
         if (!embedMessage.reactions.cache.get("🎉").users.cache.size < 1) {
           const winnerEmbed = new Discord.MessageEmbed()
@@ -101,7 +103,10 @@ exports.run = async (client, message, args) => {
             .setDescription(`Winner:\n${winner}\nHosted by: ${message.author}`)
             .setTimestamp()
             .setFooter("Ended at");
-          embedMessage.edit(":tada: **GIVEAWAY ENDED** :tada:", winnerEmbed);
+          embedMessage.edit({
+            content: ":tada: **GIVEAWAY ENDED** :tada:",
+            embeds: [winnerEmbed],
+          });
         }
         embedMessage.reactions.cache
           .get("🎉")
@@ -111,4 +116,18 @@ exports.run = async (client, message, args) => {
       }, 1000);
     }, timeInMilliseconds);
   }
+};
+
+exports.conf = {
+  enabled: true,
+  guildOnly: false,
+  aliases: [],
+  permLevel: "User",
+};
+
+exports.help = {
+  name: "eval",
+  category: "System",
+  description: "Evaluates arbitrary javascript.",
+  usage: "eval [...code]",
 };

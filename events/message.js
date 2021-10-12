@@ -1,10 +1,13 @@
 const { config, userSchema } = require("../mongodb");
 const localConfig = require("../config.json");
+const logger = require("../modules/logger");
 const { incrementRank, levelUp, incrementMessages } = require("../utility");
 
 module.exports = async (client, message) => {
   const userSchemaConfig = {
     id: `${message.author.id}#${message.guild.id}`,
+    guildId: message.guild.id,
+    userId: message.author.id,
     name: message.author.username,
     discordName: `${message.author.username}#${message.author.discriminator}`,
   };
@@ -74,5 +77,9 @@ module.exports = async (client, message) => {
   if (!cmd) return;
 
   // Run the command
-  cmd.run(client, message, args);
+  try {
+    cmd.run(client, message, args);
+  } catch (e) {
+    logger.error(e);
+  }
 };

@@ -1,5 +1,6 @@
 const Discord = require("discord.js");
 const { userSchema } = require("../mongodb");
+const logger = require("../modules/logger");
 
 exports.run = async (client, message) => {
   const member = message.mentions.members.first();
@@ -15,7 +16,7 @@ exports.run = async (client, message) => {
           id: `${member.id}#${message.guild.id}`,
         },
         (err, user) => {
-          if (err) console.log(err);
+          if (err) logger.error(err);
           if (user) {
             user.messages_count = 0;
             user.rank = 0;
@@ -32,7 +33,7 @@ exports.run = async (client, message) => {
           id: `${message.author.id}#${message.guild.id}`,
         },
         (err, user) => {
-          if (err) console.log(err);
+          if (err) logger.error(err);
           if (user) {
             user.messages_count = 0;
             user.rank = 0;
@@ -49,4 +50,18 @@ exports.run = async (client, message) => {
     .setDescription("***Your rank has been reset!***");
 
   return message.channel.send({ embeds: [embed] });
+};
+
+exports.conf = {
+  enabled: true,
+  guildOnly: false,
+  aliases: [],
+  permLevel: "User",
+};
+
+exports.help = {
+  name: "eval",
+  category: "System",
+  description: "Evaluates arbitrary javascript.",
+  usage: "eval [...code]",
 };

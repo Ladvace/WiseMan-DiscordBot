@@ -21,6 +21,8 @@ const userSchema = new Schema({
   messages_count: { type: Number, default: 0 },
   rank: { type: Number, default: 0 },
   time: { type: Number, default: 0 },
+  guildId: String,
+  userId: String,
   lastRankTime: Date,
   discordName: String,
 });

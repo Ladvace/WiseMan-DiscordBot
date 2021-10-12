@@ -13,6 +13,7 @@ module.exports = async (client, oldState, newState) => {
       messages_count: 0,
       rank: 0,
       time: 0,
+      guildId: newState.guild.id,
       lastRankTime: now.getTime(),
       discordName: `${newState.member.user.username}#${newState.member.user.discriminator}`,
     };
