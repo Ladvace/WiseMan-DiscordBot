@@ -1,18 +1,18 @@
 const Discord = require("discord.js");
 const logger = require("./modules/logger");
-const { userSchema, config } = require("./mongodb");
+const { config } = require("./mongodb");
 
 const incrementRank = async (user) => {
   const newRank = (user.rank ? user.rank : 0) + 1;
   user.rank = newRank;
-  assignRankRole(newState, client, newRank);
+  assignRankRole(user, client, newRank);
   return user.save();
 };
 
 const decrementRank = async (user) => {
   const newRank = (user.rank ? user.rank : 0) - 1;
   user.rank = newRank >= 0 ? newRank : 0;
-  assignRankRole(newState, client, newRank);
+  assignRankRole(user, client, newRank);
   return user.save();
 };
 
@@ -22,7 +22,7 @@ const incrementMessages = async (user) => {
 };
 
 const assignRankRole = async (state, client, level, tryNum = 0) => {
-  if (state.member.user.id === client.user.id) return;
+  if (user.id === client.user.id) return;
 
   const guildId = state.guild.id;
 
@@ -71,16 +71,6 @@ const assignRankRole = async (state, client, level, tryNum = 0) => {
         })
         .catch((e) => logger.error(e));
     }
-    // else {
-    //   const customRankId = await state.guild.roles.create({
-    //     name: `Level ${level}`,
-    //     color: "#738AD6",
-    //     reason: `${level} role missing`,
-    //   });
-
-    //   console.log("ROLE", customRankId.id, level);
-    //   channel.customRanks.set(level.toString(), customRankId.id);
-    // }
   }
 };
 

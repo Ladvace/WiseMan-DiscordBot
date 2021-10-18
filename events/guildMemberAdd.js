@@ -23,12 +23,18 @@ const applyText = (canvas, text) => {
 };
 
 module.exports = async (client, member) => {
+  const configSettings = {
+    id: member.guild.id,
+  };
+
   const server = await config.findOne({
     id: member.guild.id,
   });
 
-  if (!server) return;
-
+  if (!server) {
+    const newServer = new config(configSettings);
+    await newServer.save();
+  }
   const image = path.join(__dirname, "..", "assets", "wallpaper.png");
 
   const canvas = Canvas.createCanvas(700, 250);
@@ -42,12 +48,12 @@ module.exports = async (client, member) => {
 
   ctx.font = applyText(
     canvas,
-    server.welcomeMessage.replace(/\[user]/g, member.username)
+    server.welcomeMessage.replace(/\[user]/g, member.user.username)
   );
 
   ctx.fillStyle = "#FFFF";
   ctx.fillText(
-    server.welcomeMessage.replace(/\[user]/g, member.username),
+    server.welcomeMessage.replace(/\[user]/g, member.user.username),
     canvas.width / 2.5,
     canvas.height / 1.8
   );
@@ -64,8 +70,12 @@ module.exports = async (client, member) => {
 
   const attachment = new Discord.MessageAttachment(canvas.toBuffer());
 
-  message.channel.send({
-    content: `Welcome to the server, ${member.username}!`,
-    files: [attachment],
-  });
+  if (server.welcomeChannel) {
+    const channel = member.guild.channels.cache.get(server.welcomeChannel);
+
+    channel.send({
+      content: `Welcome to the server, ${member.user.username}!`,
+      files: [attachment],
+    });
+  }
 };

@@ -42,7 +42,7 @@ module.exports.run = async (client, message) => {
 exports.conf = {
   enabled: true,
   guildOnly: false,
-  aliases: [],
+  aliases: ["setwelcomemessage"],
   permLevel: "User",
 };
 

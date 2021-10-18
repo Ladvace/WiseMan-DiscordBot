@@ -23,51 +23,68 @@ const applyText = (canvas, text) => {
 };
 
 exports.run = async (client, message) => {
-  if (message.author.id !== "163300027618295808") return;
+  console.log("TEST");
+  client.emit("guildMemberAdd", message.member);
 
-  const server = await config.findOne({
-    id: message.guild.id,
-  });
+  // if (message.author.id !== "163300027618295808") return;
 
-  if (!server) return;
+  // const server = await config.findOne({
+  //   id: message.guild.id,
+  // });
 
-  const image = path.join(__dirname, "..", "assets", "wallpaper.png");
+  // if (!server) return;
 
-  const canvas = Canvas.createCanvas(700, 250);
-  const ctx = canvas.getContext("2d");
+  // const image = path.join(__dirname, "..", "assets", "wallpaper.png");
 
-  const background = await Canvas.loadImage(image);
+  // const canvas = Canvas.createCanvas(700, 250);
+  // const ctx = canvas.getContext("2d");
 
-  ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
+  // const background = await Canvas.loadImage(image);
 
-  ctx.strokeRect(0, 0, canvas.width, canvas.height);
+  // ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
 
-  ctx.font = applyText(
-    canvas,
-    server.welcomeMessage.replace(/\[user]/g, message.author.username)
-  );
+  // ctx.strokeRect(0, 0, canvas.width, canvas.height);
 
-  ctx.fillStyle = "#FFFF";
-  ctx.fillText(
-    server.welcomeMessage.replace(/\[user]/g, message.author.username),
-    canvas.width / 2.5,
-    canvas.height / 1.8
-  );
+  // ctx.font = applyText(
+  //   canvas,
+  //   server.welcomeMessage.replace(/\[user]/g, message.author.username)
+  // );
 
-  ctx.beginPath();
-  ctx.arc(125, 125, 100, 0, Math.PI * 2, true);
-  ctx.closePath();
-  ctx.clip();
+  // ctx.fillStyle = "#FFFF";
+  // ctx.fillText(
+  //   server.welcomeMessage.replace(/\[user]/g, message.author.username),
+  //   canvas.width / 2.5,
+  //   canvas.height / 1.8
+  // );
 
-  const avatar = await Canvas.loadImage(
-    message.author.displayAvatarURL({ format: "png" })
-  );
-  ctx.drawImage(avatar, 25, 25, 200, 200);
+  // ctx.beginPath();
+  // ctx.arc(125, 125, 100, 0, Math.PI * 2, true);
+  // ctx.closePath();
+  // ctx.clip();
 
-  const attachment = new Discord.MessageAttachment(canvas.toBuffer());
+  // const avatar = await Canvas.loadImage(
+  //   message.author.displayAvatarURL({ format: "png" })
+  // );
+  // ctx.drawImage(avatar, 25, 25, 200, 200);
 
-  message.channel.send({
-    content: `Welcome to the server, ${message.author.username}!`,
-    files: [attachment],
-  });
+  // const attachment = new Discord.MessageAttachment(canvas.toBuffer());
+
+  // message.channel.send({
+  //   content: `Welcome to the server, ${message.author.username}!`,
+  //   files: [attachment],
+  // });
+};
+
+exports.conf = {
+  enabled: false,
+  guildOnly: false,
+  aliases: [],
+  permLevel: "User",
+};
+
+exports.help = {
+  name: "eval",
+  category: "System",
+  description: "Evaluates arbitrary javascript.",
+  usage: "eval [...code]",
 };

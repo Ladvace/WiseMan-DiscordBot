@@ -61,14 +61,12 @@ module.exports = async (client, message) => {
     );
   }
 
-  // // Our standard argument/command name definition.
+  // Our standard argument/command name definition.
   const args = message.content
     .slice(client.config.prefix.length)
     .trim()
     .split(/ +/g);
   const command = args.shift().toLowerCase();
-
-  // console.log("command", client.config.prefix, command, args);
 
   // Grab the command data from the client.commands Enmap
   const cmd = client.container.commands.get(command);

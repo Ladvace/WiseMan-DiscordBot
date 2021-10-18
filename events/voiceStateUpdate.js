@@ -1,6 +1,6 @@
 const { userSchema } = require("../mongodb");
 const logger = require("../modules/logger");
-const { assignRankRole, incrementRank } = require("../utility");
+const { incrementRank } = require("../utility");
 
 module.exports = async (client, oldState, newState) => {
   if (newState.channel?.id && !oldState.channel?.id) {
