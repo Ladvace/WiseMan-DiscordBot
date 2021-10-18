@@ -22,9 +22,9 @@ const applyText = (canvas, text) => {
   return ctx.font;
 };
 
-module.exports = async (client, member) => {
+module.exports = async (client, message) => {
   const server = await config.findOne({
-    id: member.guild.id,
+    id: message.guild.id,
   });
 
   if (!server) return;
@@ -42,12 +42,12 @@ module.exports = async (client, member) => {
 
   ctx.font = applyText(
     canvas,
-    server.welcomeMessage.replace(/\[user]/g, member.username)
+    server.welcomeMessage.replace(/\[user]/g, message.member.username)
   );
 
   ctx.fillStyle = "#FFFF";
   ctx.fillText(
-    server.welcomeMessage.replace(/\[user]/g, member.username),
+    server.welcomeMessage.replace(/\[user]/g, message.member.username),
     canvas.width / 2.5,
     canvas.height / 1.8
   );
