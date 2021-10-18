@@ -22,9 +22,9 @@ const applyText = (canvas, text) => {
   return ctx.font;
 };
 
-module.exports = async (client, message) => {
+module.exports = async (client, member) => {
   const server = await config.findOne({
-    id: message.guild.id,
+    id: member.guild.id,
   });
 
   if (!server) return;
@@ -42,12 +42,12 @@ module.exports = async (client, message) => {
 
   ctx.font = applyText(
     canvas,
-    server.welcomeMessage.replace(/\[user]/g, message.member.username)
+    server.welcomeMessage.replace(/\[user]/g, member.username)
   );
 
   ctx.fillStyle = "#FFFF";
   ctx.fillText(
-    server.welcomeMessage.replace(/\[user]/g, message.member.username),
+    server.welcomeMessage.replace(/\[user]/g, member.username),
     canvas.width / 2.5,
     canvas.height / 1.8
   );
@@ -58,14 +58,14 @@ module.exports = async (client, message) => {
   ctx.clip();
 
   const avatar = await Canvas.loadImage(
-    message.author.displayAvatarURL({ format: "png" })
+    member.displayAvatarURL({ format: "png" })
   );
   ctx.drawImage(avatar, 25, 25, 200, 200);
 
   const attachment = new Discord.MessageAttachment(canvas.toBuffer());
 
   message.channel.send({
-    content: `Welcome to the server, ${message.author.username}!`,
+    content: `Welcome to the server, ${member.username}!`,
     files: [attachment],
   });
 };
