@@ -3,39 +3,17 @@ const logger = require("./modules/logger");
 const { userSchema, config } = require("./mongodb");
 
 const incrementRank = async (user) => {
-  user.rank = (user.rank ? user.rank : 0) + 1;
-  await user.save();
+  const newRank = (user.rank ? user.rank : 0) + 1;
+  user.rank = newRank;
+  assignRankRole(newState, client, newRank);
+  return user.save();
 };
 
-const decrementRank = async (id, name, discriminator) => {
-  await userSchema.findOne(
-    {
-      id: id,
-    },
-    (err, user) => {
-      if (err) console.log(err);
-      if (!user) {
-        const newUser = new userSchema({
-          id: id,
-          name: name,
-          messages_count: 0,
-          rank: 0,
-          discordName: `${name}#${discriminator}`,
-        });
-
-        return newUser.save();
-      } else {
-        console.log(
-          "decrement rank:",
-          user.discordName,
-          user.rank,
-          user.rank - 1
-        );
-        user.rank = user.rank === 0 ? 0 : user.rank - 1;
-        user.save();
-      }
-    }
-  );
+const decrementRank = async (user) => {
+  const newRank = (user.rank ? user.rank : 0) - 1;
+  user.rank = newRank >= 0 ? newRank : 0;
+  assignRankRole(newState, client, newRank);
+  return user.save();
 };
 
 const incrementMessages = async (user) => {
