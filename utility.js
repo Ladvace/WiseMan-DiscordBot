@@ -24,7 +24,7 @@ const incrementRank = async (user, experience, client, channel) => {
 const decrementRank = async (user, client) => {
   const newRank = (user.rank ? user.rank : 0) - 1;
   user.rank = newRank >= 0 ? newRank : 0;
-  assignRankRole(user, client, newRank);
+  // assignRankRole(user, client, newRank);
   return user.save();
 };
 
