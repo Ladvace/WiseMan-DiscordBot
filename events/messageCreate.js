@@ -1,7 +1,11 @@
 const { config, userSchema } = require("../mongodb");
 const localConfig = require("../config.json");
 const logger = require("../modules/logger");
-const { incrementRank, levelUp, incrementMessages } = require("../utility");
+const {
+  incrementRank,
+  incrementMessages,
+  incrementExp,
+} = require("../utility");
 
 module.exports = async (client, message) => {
   const userSchemaConfig = {
@@ -43,15 +47,15 @@ module.exports = async (client, message) => {
   if (message.author.bot) return;
 
   if (user) {
+    const channel = message.guild.channels.cache.get(
+      server.notificationChannel
+    );
     await incrementMessages(user);
-    if (user.messages_count % 25 === 0) {
-      await incrementRank(user);
-
-      // await levelUp(message.member, message.guild.id, user.rank, client);
-    }
+    const newExp = await incrementExp(user);
+    await incrementRank(user, newExp, client, channel);
   }
 
-  // // Ignore messages not starting with the prefix (in config.json)
+  // Ignore messages not starting with the prefix (in config.json)
   if (message.content.indexOf(client.config.prefix) !== 0) return;
 
   const prefixMention = new RegExp(`^<@!?${client.user.id}> ?$`);

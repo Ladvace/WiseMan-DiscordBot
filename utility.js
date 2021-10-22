@@ -2,14 +2,26 @@ const Discord = require("discord.js");
 const logger = require("./modules/logger");
 const { config } = require("./mongodb");
 
-const incrementRank = async (user) => {
-  const newRank = (user.rank ? user.rank : 0) + 1;
-  user.rank = newRank;
-  assignRankRole(user, client, newRank);
-  return user.save();
+const incrementRank = async (user, experience, client, channel) => {
+  const nextLevelExp = 5000 * (Math.pow(2, user.rank) - 1);
+  const exp = experience || user.exp;
+
+  if (exp >= nextLevelExp) {
+    const embed = new Discord.MessageEmbed()
+      .setAuthor(user.name)
+      .setDescription("Levele up!")
+      .setColor("#8966ff")
+      // .setThumbnail(member.user.avatarURL({ format: "png" }))
+      .addField("Rank", (user.rank + 1).toString());
+
+    user.rank = user.rank + 1;
+    if (channel) channel.send({ embeds: [embed] });
+    // assignRankRole(user, client, newRank);
+    return user.save();
+  }
 };
 
-const decrementRank = async (user) => {
+const decrementRank = async (user, client) => {
   const newRank = (user.rank ? user.rank : 0) - 1;
   user.rank = newRank >= 0 ? newRank : 0;
   assignRankRole(user, client, newRank);
@@ -21,10 +33,17 @@ const incrementMessages = async (user) => {
   await user.save();
 };
 
-const assignRankRole = async (state, client, level, tryNum = 0) => {
-  if (user.id === client.user.id) return;
+const incrementExp = async (user, expAmount = 1) => {
+  const newExp = user.exp + expAmount;
+  user.exp = newExp;
+  await user.save();
+  return newExp;
+};
 
-  const guildId = state.guild.id;
+const assignRankRole = async (state, client, level, tryNum = 0) => {
+  if (state.userId === client.user.id) return;
+
+  const guildId = state?.guildId;
 
   const channel = await config.findOne({
     id: guildId,
@@ -34,11 +53,7 @@ const assignRankRole = async (state, client, level, tryNum = 0) => {
     const newServer = new config({
       id: guildId,
       guildPrefix: "!",
-      guildNotificationChannelID: null,
-      welcomeChannel: null,
       customRanks: {},
-      rankTime: null,
-      defaultRole: null,
     });
 
     await newServer.save();
@@ -54,7 +69,7 @@ const assignRankRole = async (state, client, level, tryNum = 0) => {
     .addField("Rank", `${level}`);
 
   const notificationChannel = client.channels.cache.get(
-    channel?.guildNotificationChannelID
+    channel?.notificationChannel
   );
 
   if (channel?.customRanks) {
@@ -66,7 +81,7 @@ const assignRankRole = async (state, client, level, tryNum = 0) => {
       message.roles
         .add(customRole)
         .then(() => {
-          if (channel?.guildNotificationChannelID)
+          if (channel?.notificationChannel)
             return notificationChannel.send({ embeds: [embed] });
         })
         .catch((e) => logger.error(e));
@@ -96,6 +111,7 @@ const toProperCase = (string) => {
 
 module.exports = {
   incrementRank,
+  incrementExp,
   decrementRank,
   incrementMessages,
   assignRankRole,

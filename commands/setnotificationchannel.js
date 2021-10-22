@@ -18,7 +18,7 @@ exports.run = async (client, message, args) => {
           const channelName = client.channels.cache.get(channelId)?.name;
 
           if (channelName) {
-            server.guildNotificationChannelID = channelId.trim();
+            server.notificationChannel = channelId.trim();
             server.save();
             const embed = new Discord.MessageEmbed()
               .setColor("#8966ff")
@@ -29,7 +29,7 @@ exports.run = async (client, message, args) => {
             const isNull = channelId == "null";
 
             if (isNull) {
-              server.guildNotificationChannelID = null;
+              server.notificationChannel = null;
               server.save();
             }
 

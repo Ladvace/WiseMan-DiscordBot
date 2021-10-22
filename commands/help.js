@@ -45,12 +45,12 @@ exports.run = (client, message, args, level) => {
         ? 1
         : -1
     );
-    const embed = new Discord.MessageEmbed()
-      .setTitle("Command List")
-      .setDescription(
-        `[Use ${client.config.prefix}help <commandname> for details]`
-      )
-      .setColor("#8966ff");
+    // const embed = new Discord.MessageEmbed()
+    //   .setTitle("Command List")
+    //   .setDescription(
+    //     `[Use ${client.config.prefix}help <commandname> for details]`
+    //   )
+    //   .setColor("#8966ff");
 
     sorted.forEach((c) => {
       const cat = toProperCase(c.help.category);

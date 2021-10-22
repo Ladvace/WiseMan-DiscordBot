@@ -35,6 +35,7 @@ module.exports = async (client, member) => {
     const newServer = new config(configSettings);
     await newServer.save();
   }
+  if (!server?.welcomeMessage) return;
   const image = path.join(__dirname, "..", "assets", "wallpaper.png");
 
   const canvas = Canvas.createCanvas(700, 250);
