@@ -52,7 +52,7 @@ module.exports = async (client, message) => {
     );
     await incrementMessages(user);
     const newExp = await incrementExp(user);
-    await incrementRank(user, newExp, client, channel);
+    await incrementRank(user, newExp, client, channel, message.member);
   }
 
   // Ignore messages not starting with the prefix (in config.json)

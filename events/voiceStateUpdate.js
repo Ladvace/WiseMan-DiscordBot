@@ -1,6 +1,6 @@
 const { userSchema, config } = require("../mongodb");
 const logger = require("../modules/logger");
-const { incrementRank } = require("../utility");
+const { incrementRank, decrementRank } = require("../utility");
 
 module.exports = async (client, oldState, newState) => {
   if (newState.channel?.id && !oldState.channel?.id) {
@@ -40,7 +40,7 @@ module.exports = async (client, oldState, newState) => {
       const channel = newState.guild.channels.cache.get(
         server.notificationChannel
       );
-      await incrementRank(user, null, client, channel);
+      await incrementRank(user, null, client, channel, newState.member);
     }
 
     client.container.users[newState.member.user.id] = {
@@ -71,7 +71,8 @@ module.exports = async (client, oldState, newState) => {
         // if the user hasn't been activer for at least 2 weeks he is going to lose some ranks
         const lessThan2WeeksHours = lastRankTimeHours > 336;
 
-        if (lessThan2WeeksHours && user.rank) user.rank = user.rank - 1;
+        if (lessThan2WeeksHours && user.rank)
+          decrementRank(user, client, newState.member);
 
         user.lastRankTime = now.getTime();
         user.time = user.time + difference;
