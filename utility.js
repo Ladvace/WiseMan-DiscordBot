@@ -7,14 +7,16 @@ const incrementRank = async (user, experience, client, channel, member) => {
   const exp = experience || user.exp;
 
   if (exp >= nextLevelExp) {
+    const newRank = user.rank + 1;
     const embed = new Discord.MessageEmbed()
       .setAuthor(user.name)
       .setDescription("Levele up!")
       .setColor("#8966ff")
       .setThumbnail(member.user.avatarURL({ format: "png" }))
-      .addField("Rank", (user.rank + 1).toString());
+      .addField("Rank", newRank.toString());
 
-    user.rank = user.rank + 1;
+    user.rank = newRank;
+
     if (channel) channel.send({ embeds: [embed] });
     assignRankRole(user, client, newRank, member);
     return user.save();
