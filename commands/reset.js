@@ -1,6 +1,7 @@
 const Discord = require("discord.js");
 const { userSchema } = require("../mongodb");
 const logger = require("../modules/logger");
+const { reset } = require("../utility");
 
 exports.run = async (client, message) => {
   const member = message.mentions.members.first();
@@ -17,9 +18,7 @@ exports.run = async (client, message) => {
         (err, user) => {
           if (err) logger.error(err);
           if (user) {
-            user.messages_count = 0;
-            user.rank = 0;
-            user.save();
+            reset(user);
           }
         }
       );

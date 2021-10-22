@@ -40,6 +40,14 @@ const incrementExp = async (user, expAmount = 1) => {
   return newExp;
 };
 
+const reset = async (user) => {
+  user.rank = 1;
+  user.exp = 0;
+  user.time = 0;
+  user.messages_count = 0;
+  await user.save();
+};
+
 const assignRankRole = async (state, client, level, tryNum = 0, member) => {
   if (state.userId === client.user.id) return;
 
@@ -114,6 +122,7 @@ module.exports = {
   incrementExp,
   decrementRank,
   incrementMessages,
+  reset,
   assignRankRole,
   msToTime,
   toProperCase,
