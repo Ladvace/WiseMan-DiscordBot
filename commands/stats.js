@@ -1,3 +1,4 @@
+const { userMention } = require("@discordjs/builders");
 const Discord = require("discord.js");
 const { userSchema } = require("../mongodb");
 const { msToTime } = require("../utility");
@@ -25,7 +26,8 @@ exports.run = async (client, message) => {
           msToTime(
             startSession ? userMentioned.time + diff : userMentioned.time
           )
-        );
+        )
+        .addField("N. Messages", userMentioned.messages_count);
       return message.channel.send({ embeds: [embed] });
     }
   } else {
@@ -55,6 +57,7 @@ exports.run = async (client, message) => {
         );
       }
 
+      embded.addField("N. Messages", user.messages_count);
       return message.channel.send({ embeds: [embed] });
     }
   }
