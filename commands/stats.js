@@ -57,7 +57,7 @@ exports.run = async (client, message) => {
         );
       }
 
-      embded.addField("N. Messages", user.messages_count);
+      embed.addField("N. Messages", user.messages_count);
       return message.channel.send({ embeds: [embed] });
     }
   }
