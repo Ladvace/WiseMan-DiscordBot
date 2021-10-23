@@ -27,7 +27,7 @@ exports.run = async (client, message) => {
             startSession ? userMentioned.time + diff : userMentioned.time
           )
         )
-        .addField("N. Messages", userMentioned.messages_count);
+        .addField("N. Messages", userMentioned.messages_count.toString());
       return message.channel.send({ embeds: [embed] });
     }
   } else {
@@ -57,7 +57,7 @@ exports.run = async (client, message) => {
         );
       }
 
-      embed.addField("N. Messages", user.messages_count);
+      embed.addField("N. Messages", user.messages_count.toString());
       return message.channel.send({ embeds: [embed] });
     }
   }
