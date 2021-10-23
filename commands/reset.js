@@ -28,7 +28,7 @@ exports.run = async (client, message) => {
     .setAuthor(message.author.username)
     .setColor("#8966ff")
     .setThumbnail(message.author.avatarURL({ format: "png" }))
-    .setDescription(`**${member.user.username}\'s rank has been reset!***`);
+    .setDescription(`**${member.user.username}\'s rank has been reset!**`);
 
   return message.channel.send({ embeds: [embed] });
 };

@@ -3,8 +3,8 @@
 const env = require("dotenv").config();
 const { Client, Collection } = require("discord.js");
 const logger = require("./modules/logger.js");
-const localConfig = require("./config.json");
-const { intents, partials, permLevels } = require("./config.js");
+const localConfig = require("./config.js");
+const { intents, partials } = require("./config.js");
 
 const client = new Client({ intents, partials });
 
@@ -16,17 +16,10 @@ const commands = new Collection();
 const aliases = new Collection();
 const slashcmds = new Collection();
 
-const levelCache = {};
-for (let i = 0; i < permLevels.length; i++) {
-  const thisLevel = permLevels[i];
-  levelCache[thisLevel.name] = thisLevel.level;
-}
-
 client.container = {
   commands,
   aliases,
   slashcmds,
-  levelCache,
   users: {},
 };
 

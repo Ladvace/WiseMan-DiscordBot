@@ -72,16 +72,6 @@ const assignRankRole = async (state, client, level, tryNum = 0, member) => {
     else return;
   }
 
-  const embed = new Discord.MessageEmbed()
-    .setAuthor(state.member.user.username)
-    .setColor("#8966ff")
-    .setThumbnail(state.member.user.avatarURL({ format: "png" }))
-    .addField("Rank", `${level}`);
-
-  const notificationChannel = client.channels.cache.get(
-    channel?.notificationChannel
-  );
-
   if (channel?.customRanks) {
     const customRankId = channel.customRanks.get(level);
 
@@ -90,10 +80,7 @@ const assignRankRole = async (state, client, level, tryNum = 0, member) => {
 
       member
         .add(customRole)
-        .then(() => {
-          if (channel?.notificationChannel)
-            return notificationChannel.send({ embeds: [embed] });
-        })
+        .then(() => logger.log(`Role: ${customRole} added`))
         .catch((e) => logger.error(e));
     }
   }

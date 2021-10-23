@@ -1,5 +1,5 @@
 const { config, userSchema } = require("../mongodb");
-const localConfig = require("../config.json");
+const localConfig = require("../config.js");
 const logger = require("../modules/logger");
 const {
   incrementRank,
