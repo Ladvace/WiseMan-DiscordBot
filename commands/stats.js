@@ -1,4 +1,3 @@
-const { userMention } = require("@discordjs/builders");
 const Discord = require("discord.js");
 const { userSchema } = require("../mongodb");
 const { msToTime } = require("../utility");
@@ -12,6 +11,7 @@ exports.run = async (client, message) => {
     });
 
     if (userMentioned) {
+      const nextLevelExp = 5000 * (Math.pow(2, userMentioned.rank) - 1);
       const startSession = client.container.users[member.user.id]?.start;
 
       const diff = Date.now() - startSession;
@@ -21,6 +21,7 @@ exports.run = async (client, message) => {
         .setColor("#8966ff")
         .setThumbnail(member.user.avatarURL({ format: "png" }))
         .addField("Rank", userMentioned.rank.toString())
+        .addField("Experience", `${userMentioned.exp}/${nextLevelExp}`)
         .addField(
           "Total Time",
           msToTime(
@@ -36,6 +37,7 @@ exports.run = async (client, message) => {
     });
 
     if (user) {
+      const nextLevelExp = 5000 * (Math.pow(2, user.rank) - 1);
       const startSession = client.container.users[message.author.id]?.start;
 
       const diff = Date.now() - startSession;
@@ -45,6 +47,7 @@ exports.run = async (client, message) => {
         .setColor("#8966ff")
         .setThumbnail(message.author.avatarURL({ format: "png" }))
         .addField("Rank", user.rank.toString())
+        .addField("Experience", `${user.exp}/${nextLevelExp}`)
         .addField(
           "Total Time",
           msToTime(startSession ? user.time + diff : user.time)
