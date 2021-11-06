@@ -7,6 +7,8 @@ const incrementRank = async (user, experience, client, channel, member) => {
   const exp = experience || user.exp;
 
   if (exp >= nextLevelExp) {
+    const nextOwnedExp = exp - nextLevelExp;
+
     const newRank = user.rank + 1;
     const embed = new Discord.MessageEmbed()
       .setAuthor(user.name)
@@ -16,9 +18,15 @@ const incrementRank = async (user, experience, client, channel, member) => {
       .addField("Rank", newRank.toString());
 
     user.rank = newRank;
+    user.exp = nextOwnedExp;
 
     if (channel) channel.send({ embeds: [embed] });
     assignRankRole(user, client, newRank, member);
+
+    if (nextOwnedExp > 0) {
+      await incrementRank(user, nextOwnedExp, client, channel, member);
+    }
+
     return user.save();
   }
 };
