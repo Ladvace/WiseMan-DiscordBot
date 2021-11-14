@@ -2,9 +2,9 @@ const { config } = require("../mongodb");
 const Discord = require("discord.js");
 const Canvas = require("canvas");
 const path = require("path");
-const fontPath = path.join(__dirname, "..", "assets", "Inter-Bold.ttf");
+// const fontPath = path.join(__dirname, "..", "assets", "Inter-Bold.ttf");
 
-Canvas.registerFont(fontPath, { family: "Inter" });
+// Canvas.registerFont(fontPath, { family: "Inter" });
 
 const applyText = (canvas, text) => {
   const ctx = canvas.getContext("2d");
