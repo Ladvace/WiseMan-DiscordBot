@@ -21,14 +21,14 @@ This bot allows you to level up based on the time you spend in a vocal channel a
 
 You need to add the prefix `!` before the command e.g: `!rank`.
 
-- **rank** - It shows you your rank.
-- **propic** - It shows you your profile image.
+- **stats** - It shows you your stats (e.g. rank, time spent in a vc..).
 - **github** - It shows you the github repo link.
-- **help** - It shows you all the commands.
-- **poll** - It allows you to make a poll.
-- **setPrefix** - It allows you to set a new prefix for your server.
+- **help** - It shows you all the commands and how to use them.
+- **setPrefix** - It allows you to set a new prefix for your server (the default one is !).
 - **setNotificationChannel** - It allows you to set a new text channel where the notification will be sent.
 - **setRank** - It allows you to set a custom role for each level.
+- **setwelcomechannel** - It allows you to set a channel to get the welcome messages for new users.
+- **setwelcome** - You can set a custom welcome message.
 
 **and much more...**
 
