@@ -17,7 +17,10 @@ exports.run = async (client, message) => {
 
     leaderBoard.forEach((user, i) => {
       if (user.userId !== "589693244456042497")
-        embed.addField(`${i + 1}.  ${user.name}`, msToTime(user.time));
+        embed.addField(
+          `${i + 1}.  ${user.name} (${user.rank})`,
+          msToTime(user.time)
+        );
     });
 
     return message.channel.send({ embeds: [embed] });
