@@ -67,6 +67,12 @@ exports.run = (client, message, args, level) => {
   } else {
     // Show individual command's help.
     let command = args[0];
+    console.log(
+      "COM",
+      args,
+      container.commands.has(command),
+      container.commands.has(container.aliases.get(command))
+    );
     if (
       container.commands.has(command) ||
       container.commands.has(container.aliases.get(command))
@@ -74,7 +80,6 @@ exports.run = (client, message, args, level) => {
       command =
         container.commands.get(command) ??
         container.commands.get(container.aliases.get(command));
-      if (level < container.levelCache[command.conf.permLevel]) return;
 
       const embed = new Discord.MessageEmbed()
         .setTitle(command.help.name)

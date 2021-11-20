@@ -5,6 +5,7 @@ exports.run = async (client, message) => {
   const embed = new Discord.MessageEmbed()
     .setAuthor("Bot Infos")
     .setColor("#8966ff")
+    .addField("This bot has been developed by:", "Ladvace#1909")
     .addField(
       "Number of servers the bot is in:",
       client.guilds.cache.size.toString()
