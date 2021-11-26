@@ -6,7 +6,7 @@ const config = new Schema({
   guildPrefix: { type: String, default: "!" },
   notificationChannel: String,
   welcomeChannel: String,
-  customRanks: Map,
+  customRanks: { type: Map, of: String },
   rankTime: { type: Number, default: 0 },
   welcomeMessage: {
     type: String,

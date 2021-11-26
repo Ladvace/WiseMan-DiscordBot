@@ -47,7 +47,7 @@ exports.run = async (client, message) => {
         .setColor("#8966ff")
         .setThumbnail(message.author.avatarURL({ format: "png" }))
         .addField("Rank", user.rank.toString())
-        .addField("Experience", `${user.exp}/${nextLevelExp}`)
+        .addField("Experience", `${user.exp}/${nextLevelExp} XP`)
         .addField(
           "Total Time",
           msToTime(startSession ? user.time + diff : user.time)

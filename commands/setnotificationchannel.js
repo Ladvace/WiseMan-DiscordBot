@@ -53,8 +53,8 @@ exports.conf = {
 };
 
 exports.help = {
-  name: "eval",
+  name: "setnotificationchannel",
   category: "System",
-  description: "Evaluates arbitrary javascript.",
-  usage: "eval [...code]",
+  description: "You can set a channel to send the notifications to",
+  usage: "setnotificationchannel CHANNEL_ID",
 };

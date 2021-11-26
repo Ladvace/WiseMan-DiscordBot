@@ -18,6 +18,7 @@ module.exports = async (client, message) => {
 
   const configSettings = {
     id: message.guild.id,
+    customRanks: {},
   };
 
   const server = await config.findOne({

@@ -25,6 +25,7 @@ const applyText = (canvas, text) => {
 module.exports = async (client, member) => {
   const configSettings = {
     id: member.guild.id,
+    customRanks: {},
   };
 
   const server = await config.findOne({

@@ -5,8 +5,5 @@ module.exports = async (client) => {
 
   client.container.users = {};
   client.config.pollAnswers = {};
-  // client.config.reactionCount = {};
-  // client.config.usersReaction = {};
-  // client.config.polls = {};
   client.config.poolSolution = {};
 };
