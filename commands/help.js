@@ -67,12 +67,6 @@ exports.run = (client, message, args, level) => {
   } else {
     // Show individual command's help.
     let command = args[0];
-    console.log(
-      "COM",
-      args,
-      container.commands.has(command),
-      container.commands.has(container.aliases.get(command))
-    );
     if (
       container.commands.has(command) ||
       container.commands.has(container.aliases.get(command))

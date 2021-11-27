@@ -10,7 +10,8 @@ exports.run = async (client, message) => {
       "Number of servers the bot is in:",
       client.guilds.cache.size.toString()
     )
-    .addField("Members in this server:", memberCount.toString());
+    .addField("Members in this server:", memberCount.toString())
+    .addField("Donate", "https://ko-fi.com/ladvace");
 
   return message.channel.send({ embeds: [embed] });
 };
