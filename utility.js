@@ -21,10 +21,11 @@ const incrementRank = async (user, experience, client, channel, member) => {
     user.exp = nextOwnedExp;
 
     if (channel) channel.send({ embeds: [embed] });
-    assignRankRole(user, client, newRank, member);
 
     if (nextOwnedExp > 0) {
       await incrementRank(user, nextOwnedExp, client, channel, member);
+    } else {
+      assignRankRole(user, client, newRank, member);
     }
 
     return user.save();
