@@ -48,12 +48,9 @@ module.exports = async (client, message) => {
   if (message.author.bot) return;
 
   if (user) {
-    const channel = message.guild.channels.cache.get(
-      server.notificationChannel
-    );
     await incrementMessages(user);
     const newExp = await incrementExp(user);
-    await incrementRank(user, newExp, client, channel, message.member);
+    await incrementRank(user, newExp, client, message.member);
   }
 
   // Ignore messages not starting with the prefix (in config.json)

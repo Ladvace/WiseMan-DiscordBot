@@ -2,7 +2,7 @@ const Discord = require("discord.js");
 const logger = require("./modules/logger");
 const { config } = require("./mongodb");
 
-const incrementRank = async (user, experience, client, channel, member) => {
+const incrementRank = async (user, experience, client, member) => {
   const nextLevelExp = 5000 * (Math.pow(2, user.rank) - 1);
   const exp = experience || user.exp;
 
@@ -10,20 +10,12 @@ const incrementRank = async (user, experience, client, channel, member) => {
     const nextOwnedExp = exp - nextLevelExp;
 
     const newRank = user.rank + 1;
-    const embed = new Discord.MessageEmbed()
-      .setAuthor(user.name)
-      .setDescription("Levele up!")
-      .setColor("#8966ff")
-      .setThumbnail(member.user.avatarURL({ format: "png" }))
-      .addField("Rank", newRank.toString());
 
     user.rank = newRank;
     user.exp = nextOwnedExp;
 
-    if (channel) channel.send({ embeds: [embed] });
-
     if (nextOwnedExp > 0) {
-      await incrementRank(user, nextOwnedExp, client, channel, member);
+      await incrementRank(user, nextOwnedExp, client, member);
     } else {
       assignRankRole(user, client, newRank.toString(), 0, member);
     }
@@ -84,12 +76,38 @@ const assignRankRole = async (state, client, level, tryNum = 0, member) => {
   if (channel?.customRanks) {
     const customRankId = channel.customRanks.get(level);
 
+    const previusLevel = level - 1;
+    const customPreviusRankId = channel.customRanks.get(
+      previusLevel.toString()
+    );
+
     if (customRankId) {
       const customRole = member.guild.roles.cache.get(customRankId);
 
       member.roles
+        .remove(customPreviusRankId)
+        .then(() => logger.log(`Role: ${customRole} removed`))
+        .catch((e) => logger.error(e));
+
+      member.roles
         .add(customRole)
-        .then(() => logger.log(`Role: ${customRole} added`))
+        .then(() => {
+          logger.log(`Role: ${customRole} added`);
+
+          if (channel.notificationChannel) {
+            const notificationChannel = member.guild.channels.cache.get(
+              channel.notificationChannel
+            );
+
+            const embed = new Discord.MessageEmbed()
+              .setTitle(`${member.user.username}`)
+              .setColor("#8966ff")
+              .addField("Rank", level)
+              .addField("Role", `${customRole}`);
+
+            notificationChannel.send({ embeds: [embed] });
+          }
+        })
         .catch((e) => logger.error(e));
     }
   }

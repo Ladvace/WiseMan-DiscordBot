@@ -38,10 +38,7 @@ module.exports = async (client, oldState, newState) => {
       const newUser = new userSchema(userSchemaConfig);
       await newUser.save();
     } else {
-      const channel = newState.guild.channels.cache.get(
-        server.notificationChannel
-      );
-      await incrementRank(user, null, client, channel, newState.member);
+      await incrementRank(user, null, client, newState.member);
     }
 
     client.container.users[newState.member.user.id] = {
