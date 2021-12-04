@@ -46,7 +46,6 @@ exports.run = async (client, message, args) => {
   }
 
   if (timeInMilliseconds && timeInMilliseconds > 0) {
-    console.log("time", time, parsedTime);
     const embed = new Discord.MessageEmbed()
       .setTitle(`${prize}`)
       .setColor("#8966FF")

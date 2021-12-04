@@ -25,7 +25,7 @@ const incrementRank = async (user, experience, client, channel, member) => {
     if (nextOwnedExp > 0) {
       await incrementRank(user, nextOwnedExp, client, channel, member);
     } else {
-      assignRankRole(user, client, newRank, member);
+      assignRankRole(user, client, newRank.toString(), 0, member);
     }
 
     return user.save();
@@ -35,7 +35,7 @@ const incrementRank = async (user, experience, client, channel, member) => {
 const decrementRank = async (user, client, member) => {
   const newRank = (user.rank ? user.rank : 0) - 1;
   user.rank = newRank >= 0 ? newRank : 0;
-  assignRankRole(user, client, newRank, member);
+  assignRankRole(user, client, newRank.toString(), 0, member);
   return user.save();
 };
 
@@ -77,7 +77,7 @@ const assignRankRole = async (state, client, level, tryNum = 0, member) => {
 
     await newServer.save();
 
-    if (tryNum < 3) assignRankRole(state, client, level, tryNum + 1);
+    if (tryNum < 3) assignRankRole(state, client, level, tryNum + 1, member);
     else return;
   }
 
@@ -85,9 +85,9 @@ const assignRankRole = async (state, client, level, tryNum = 0, member) => {
     const customRankId = channel.customRanks.get(level);
 
     if (customRankId) {
-      const customRole = state.guild.roles.cache.get(customRankId);
+      const customRole = member.guild.roles.cache.get(customRankId);
 
-      member
+      member.roles
         .add(customRole)
         .then(() => logger.log(`Role: ${customRole} added`))
         .catch((e) => logger.error(e));
