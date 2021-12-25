@@ -28,7 +28,7 @@ const decrementRank = async (user, client, member) => {
   const newRank = (user.rank ? user.rank : 0) - 1;
   user.rank = newRank >= 0 ? newRank : 0;
   assignRankRole(user, client, newRank.toString(), 0, member);
-  return user.save();
+  // return user.save();
 };
 
 const incrementMessages = async (user) => {

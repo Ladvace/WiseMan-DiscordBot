@@ -2,12 +2,12 @@ const Discord = require("discord.js");
 
 exports.run = async (client, message) => {
   const embed = new Discord.MessageEmbed()
-    .setTitle("GitHub")
+    .setTitle("Donate")
     .setColor("#8966FF")
-    .setURL("https://github.com/Ladvace/DiscordBot")
+    .setURL("https://ko-fi.com/ladvace")
     .setThumbnail("https://i.imgur.com/et6QQbt.png", "")
     .setDescription(
-      "This is my repository! You can check out more about the wiseman-bot"
+      "This bot is open source, consider donation to support it, If you are interested in any other way, just DM me. Any type of support it's always appreciated."
     );
   return message.channel.send({ embeds: [embed] });
 };
@@ -20,8 +20,8 @@ exports.conf = {
 };
 
 exports.help = {
-  name: "github",
+  name: "donate",
   category: "infos",
-  description: "Github code repository.",
-  usage: "github",
+  description: "More info on how to support this bot",
+  usage: "donate",
 };
