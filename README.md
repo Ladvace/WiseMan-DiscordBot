@@ -2,8 +2,6 @@
     <img width="500" height="auto" src="https://i.imgur.com/et6QQbt.png" alt="WiseMan" />
 </p>
 
-## ⚠️ NEW GOLANG VERSION [HERE](https://github.com/gorilla-devs/wiseman-bot)⚠️ 
-
 ## WiseMan - Discord Bot 🤖
 
 [![forthebadge](https://forthebadge.com/images/badges/gluten-free.svg)](https://forthebadge.com) [![forthebadge](https://forthebadge.com/images/badges/made-with-crayons.svg)](https://forthebadge.com) [![forthebadge](https://forthebadge.com/images/badges/made-with-javascript.svg)](https://forthebadge.com) [![forthebadge](https://forthebadge.com/images/badges/built-with-love.svg)](https://forthebadge.com)
