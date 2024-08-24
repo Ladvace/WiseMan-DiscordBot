@@ -6,7 +6,7 @@
 
 [![forthebadge](https://forthebadge.com/images/badges/gluten-free.svg)](https://forthebadge.com) [![forthebadge](https://forthebadge.com/images/badges/made-with-crayons.svg)](https://forthebadge.com) [![forthebadge](https://forthebadge.com/images/badges/made-with-javascript.svg)](https://forthebadge.com) [![forthebadge](https://forthebadge.com/images/badges/built-with-love.svg)](https://forthebadge.com)
 
-⚠️ **I don't have so much time to maintain this project, if anyone is insterested in helping mantaining/developing this project feel free to open an issue or contacting me** ⚠️
+⚠️ **The current bot is not supported anymore, I reccomand using github.com/fulviodenza/rankore** ⚠️
 
 <h2>The current maintened brench is mongodbVersion</h2>
 <br/>
